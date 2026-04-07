@@ -1,0 +1,215 @@
+.hub-page {
+  min-height: 100vh;
+  background: #f9fafb;
+  padding-bottom: 80px;
+}
+
+.hub-container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Top band ────────────────────────────────────────────────────────────── */
+
+.hub-top-band {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 60%, #1a1a2e 100%);
+  padding-bottom: 48px;
+}
+
+.hub-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 88px;
+  margin-bottom: 32px;
+}
+
+.hub-breadcrumbs__link {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.hub-breadcrumbs__link:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hub-breadcrumbs__sep {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.hub-breadcrumbs__current {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.hub-hero__title {
+  font-size: 48px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -1.5px;
+  margin: 0 0 12px;
+  line-height: 1.1;
+}
+
+.hub-hero__sub {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+
+.hub-grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+  padding-bottom: 80px;
+}
+
+/* ── Wide card (ribbon) ──────────────────────────────────────────────────── */
+
+.hub-card--wide {
+  margin-top: 40px;
+}
+
+.hub-card--wide__inner {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 0;
+  align-items: stretch;
+}
+
+.hub-card--wide .hub-card__ribbon-preview {
+  padding: 32px 32px;
+  display: flex;
+  align-items: center;
+}
+
+.hub-card--wide .hub-card__body {
+  border-left: 1px solid #f3f4f6;
+  padding: 32px;
+  justify-content: center;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+
+.hub-card {
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.hub-card:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.hub-card--soon {
+  opacity: 0.65;
+}
+
+.hub-card--soon:hover {
+  transform: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Ribbon preview area ─────────────────────────────────────────────────── */
+
+.hub-card__ribbon-preview {
+  padding: 24px 24px 0;
+}
+
+/* ── Other illustrations ─────────────────────────────────────────────────── */
+
+.hub-card__illustration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+}
+
+.hub-card__illustration svg {
+  height: 120px;
+  width: auto;
+}
+
+/* ── Card body ───────────────────────────────────────────────────────────── */
+
+.hub-card__body {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.hub-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-card__title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.hub-card__soon-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: #f3f4f6;
+  color: #9ca3af;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.hub-card__desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+
+.hub-card__btn {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  background: #e91e8c !important;
+  border-color: #e91e8c !important;
+  color: #ffffff !important;
+  margin-top: 4px;
+}
+
+.hub-card__btn:not(:disabled):hover {
+  background: #c2185b !important;
+  border-color: #c2185b !important;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .hub-grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+}

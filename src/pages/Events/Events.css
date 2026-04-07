@@ -1,0 +1,416 @@
+.events-page {
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+
+.events-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 60%, #1a1a2e 100%);
+  padding: 80px 24px 72px;
+  text-align: center;
+}
+
+.events-hero__content {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.events-hero__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #e91e8c;
+  margin-bottom: 16px;
+}
+
+.events-hero__title {
+  font-size: 52px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1.5px;
+  margin: 0 0 16px;
+  line-height: 1.1;
+}
+
+.events-hero__subtitle {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Debug date picker ────────────────────────────────────────────────────── */
+
+.date-debug {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 860px;
+  margin: 0 auto 48px;
+  padding: 12px 20px;
+  background: #fffbeb;
+  border: 1.5px dashed #f59e0b;
+  border-radius: 12px;
+}
+
+.date-debug__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400e;
+  white-space: nowrap;
+}
+
+.date-debug__input {
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1a2e;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 4px 10px;
+  background: #ffffff;
+  outline: none;
+  cursor: pointer;
+}
+
+.date-debug__input:focus {
+  border-color: #f59e0b;
+}
+
+/* ── Timeline section ─────────────────────────────────────────────────────── */
+
+.timeline-section {
+  padding: 80px 24px 100px;
+}
+
+.timeline-container {
+  max-width: 860px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Vertical center line */
+.timeline-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e5e7eb;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+/* ── Dots ─────────────────────────────────────────────────────────────────── */
+
+.tl-dot {
+  position: absolute;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid #f9fafb;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.tl-dot--past     { background: #9ca3af; box-shadow: 0 0 0 2px #9ca3af; }
+.tl-dot--upcoming { background: #10b981; box-shadow: 0 0 0 2px #10b981; }
+.tl-dot--urgent   {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px #ef4444;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px #ef4444; }
+  50%       { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2); }
+}
+
+/* ── Event cards ──────────────────────────────────────────────────────────── */
+
+.ev-card {
+  position: absolute;
+  /* Default: card on the LEFT side of the line */
+  width: calc(50% - 56px);
+  right: calc(50% + 28px);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  /* Inner border on the side closest to center line (right for left-side card) */
+  border-right: 4px solid transparent;
+  border-left: none;
+  cursor: default;
+  z-index: 1;
+  transition: box-shadow 0.2s;
+}
+
+/* Right-side card */
+.ev-card--right {
+  right: auto;
+  left: calc(50% + 28px);
+  border-right: none;
+  border-left: 4px solid transparent;
+}
+
+/* Open card covers surrounding elements */
+.ev-card--open {
+  z-index: 10;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
+}
+
+/* Status colors on the inner border — opacity only when NOT open */
+.ev-card--past:not(.ev-card--open)     { opacity: 0.65; }
+.ev-card--past                          { border-color: #e5e7eb; }
+.ev-card--upcoming                      { border-color: #10b981; }
+.ev-card--urgent                        { border-color: #ef4444; }
+
+/* ── Card header ──────────────────────────────────────────────────────────── */
+
+.ev-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ev-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+  flex: 1;
+  letter-spacing: -0.2px;
+}
+
+/* Day label (Минуло / 11 днів / Завтра) inside the header */
+.ev-day-label {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.ev-day-label--past     { background: transparent; color: #9ca3af; }
+.ev-day-label--upcoming { background: #d1fae5; color: #065f46; }
+.ev-day-label--urgent   { background: #fee2e2; color: #991b1b; }
+
+.ev-chevron {
+  font-size: 20px;
+  color: #d1d5db;
+  transition: transform 0.25s, color 0.2s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ev-card:hover .ev-chevron {
+  color: #9ca3af;
+}
+
+.ev-chevron--open {
+  transform: rotate(90deg);
+  color: #e91e8c !important;
+}
+
+/* ── Card body (expandable) ───────────────────────────────────────────────── */
+
+/* Date — large, centered, top of expanded body */
+.ev-body-date {
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 4px;
+}
+
+.ev-date {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.ev-date--past     { color: #9ca3af; }
+.ev-date--upcoming { color: #10b981; }
+.ev-date--urgent   { color: #ef4444; }
+
+.ev-desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 10px 0 14px;
+}
+
+/* ── Discount block ───────────────────────────────────────────────────────── */
+
+.ev-discount {
+  background: #fdf2f8;
+  border: 1px solid rgba(233, 30, 140, 0.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.ev-discount__badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fce7f3;
+  color: #e91e8c;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+.ev-discount__text {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Actions ──────────────────────────────────────────────────────────────── */
+
+.ev-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 2px;
+}
+
+.ev-btn-primary {
+  background: #e91e8c !important;
+  color: #ffffff !important;
+  border-color: #e91e8c !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  height: 36px !important;
+  padding: 0 18px !important;
+}
+
+.ev-btn-primary:hover {
+  background: #c2185b !important;
+  border-color: #c2185b !important;
+  transition: all 0.2s !important;
+}
+
+.ev-btn-secondary {
+  background: transparent !important;
+  color: #6b7280 !important;
+  border: 1.5px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  height: 36px !important;
+  padding: 0 18px !important;
+}
+
+.ev-btn-secondary:hover {
+  border-color: #e91e8c !important;
+  color: #e91e8c !important;
+  transition: all 0.2s !important;
+}
+
+/* ── Today marker ─────────────────────────────────────────────────────────── */
+
+/*
+  Default: marker on RIGHT side of center line.
+  - left: 50% → container left edge at line
+  - flex: [arrow ◀] [label]
+  - Arrow border-right (◀) → tip is at left edge of arrow = at 50% = line ✓
+  - Arrow points LEFT toward the line ✓
+*/
+.today-marker {
+  position: absolute;
+  left: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 5;
+  width: max-content;
+  pointer-events: none;
+}
+
+/*
+  Left-side variant: marker on LEFT side of center line.
+  - right: 50% → container right edge at line
+  - flex-direction: row-reverse → visual order: [label] [arrow ▶]
+  - Arrow border-left (▶) → tip is at right edge of arrow = at 50% = line ✓
+  - Arrow points RIGHT toward the line ✓
+*/
+.today-marker--left {
+  left: auto;
+  right: 50%;
+  flex-direction: row-reverse;
+}
+
+.today-marker__arrow {
+  width: 0;
+  height: 0;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 5px rgba(233, 30, 140, 0.45));
+  /* Default: points left ◀ (right-side marker, tip touches line) */
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 13px solid #e91e8c;
+}
+
+/* Left-side marker: arrow points right ▶ toward line */
+.today-marker--left .today-marker__arrow {
+  border-right: none;
+  border-left: 13px solid #e91e8c;
+}
+
+.today-marker__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e91e8c;
+  background: #fce7f3;
+  border: 1.5px solid rgba(233, 30, 140, 0.25);
+  padding: 4px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .events-hero__title {
+    font-size: 36px;
+  }
+
+  .timeline-line,
+  .tl-dot {
+    left: 20px;
+  }
+
+  .ev-card,
+  .ev-card--right {
+    position: absolute;
+    left: 52px;
+    right: 0;
+    width: auto;
+    border-right: none;
+    border-left: 4px solid transparent;
+  }
+
+  .ev-card--past     { border-left-color: #e5e7eb; }
+  .ev-card--upcoming { border-left-color: #10b981; }
+  .ev-card--urgent   { border-left-color: #ef4444; }
+
+  .today-marker,
+  .today-marker--left {
+    left: 20px;
+    right: auto;
+    flex-direction: row;
+  }
+
+  .today-marker--left .today-marker__arrow {
+    border-left: none;
+    border-right: 13px solid #e91e8c;
+  }
+}

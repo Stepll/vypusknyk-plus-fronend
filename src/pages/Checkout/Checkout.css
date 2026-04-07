@@ -1,0 +1,351 @@
+.co-page {
+  min-height: 100vh;
+  background: #f9fafb;
+  padding-bottom: 80px;
+}
+
+.co-container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Top band / breadcrumbs ────────────────────────────────────────────── */
+
+.co-top-band {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 60%, #1a1a2e 100%);
+  padding-bottom: 24px;
+}
+
+.co-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 88px;
+}
+
+.co-breadcrumbs__link {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.co-breadcrumbs__link:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.co-breadcrumbs__sep {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.co-breadcrumbs__current {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────────── */
+
+.co-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  padding: 40px 0 0;
+  align-items: start;
+}
+
+/* ── Form ──────────────────────────────────────────────────────────────── */
+
+.co-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.co-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a1a2e;
+  letter-spacing: -0.5px;
+  margin: 0 0 24px;
+}
+
+/* ── Section ───────────────────────────────────────────────────────────── */
+
+.co-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.co-section__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+/* ── Field ─────────────────────────────────────────────────────────────── */
+
+.co-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.co-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.co-error {
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+/* ── Delivery / Payment option cards ───────────────────────────────────── */
+
+.co-delivery-options {
+  display: flex;
+  gap: 12px;
+}
+
+.co-delivery-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: inherit;
+  text-align: left;
+}
+
+.co-delivery-card:hover:not(.co-delivery-card--disabled) {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.co-delivery-card--active {
+  border-color: #e91e8c;
+  background: #fdf2f8;
+}
+
+.co-delivery-card--active:hover {
+  border-color: #e91e8c;
+  background: #fdf2f8;
+}
+
+.co-delivery-card--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Radio dot */
+.co-delivery-card__radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.co-delivery-card--active .co-delivery-card__radio {
+  border-color: #e91e8c;
+}
+
+.co-delivery-card--active .co-delivery-card__radio::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e91e8c;
+}
+
+.co-delivery-card__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.co-delivery-card__badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────────── */
+
+.co-sidebar {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+}
+
+.co-sidebar__title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 16px;
+}
+
+.co-sidebar__items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.co-sidebar__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.co-sidebar__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.co-sidebar__item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.co-sidebar__item-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.co-sidebar__item-qty {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.co-sidebar__ribbon-params {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.co-sidebar__ribbon-params span {
+  font-size: 11px;
+  font-weight: 500;
+  color: #7c3aed;
+  background: #f5f3ff;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* ── Divider + total ───────────────────────────────────────────────────── */
+
+.co-sidebar__divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.co-sidebar__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.co-sidebar__total-value {
+  font-size: 26px;
+  font-weight: 900;
+  color: #1a1a2e;
+  letter-spacing: -0.5px;
+}
+
+/* ── Submit button ─────────────────────────────────────────────────────── */
+
+.co-sidebar__submit-btn {
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: 999px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  background: #e91e8c !important;
+  border-color: #e91e8c !important;
+  margin-bottom: 12px;
+}
+
+.co-sidebar__submit-btn:hover {
+  background: #c2185b !important;
+  border-color: #c2185b !important;
+}
+
+.co-sidebar__terms {
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.co-sidebar__terms a {
+  color: #7c3aed;
+  text-decoration: none;
+}
+
+.co-sidebar__terms a:hover {
+  text-decoration: underline;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .co-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .co-sidebar {
+    position: static;
+  }
+
+  .co-delivery-options {
+    flex-direction: column;
+  }
+}

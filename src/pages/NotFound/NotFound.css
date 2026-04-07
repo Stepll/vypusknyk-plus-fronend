@@ -1,0 +1,77 @@
+.nf-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 60%, #1a1a2e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.nf-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ── Ribbon ──────────────────────────────────────────────────────────────── */
+
+.nf-ribbon-wrap {
+  width: 100%;
+  animation: nf-float 3.5s ease-in-out infinite;
+}
+
+.nf-ribbon-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+@keyframes nf-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%       { transform: translateY(-10px) rotate(1deg); }
+}
+
+/* ── Text ────────────────────────────────────────────────────────────────── */
+
+.nf-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+
+.nf-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Button ──────────────────────────────────────────────────────────────── */
+
+.nf-btn {
+  height: 46px !important;
+  border-radius: 999px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding: 0 32px !important;
+  background: #e91e8c !important;
+  border-color: #e91e8c !important;
+}
+
+.nf-btn:hover {
+  background: #c2185b !important;
+  border-color: #c2185b !important;
+}
+
+@media (max-width: 480px) {
+  .nf-title {
+    font-size: 20px;
+  }
+}

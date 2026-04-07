@@ -1,0 +1,139 @@
+.cart-float {
+  position: fixed;
+  top: 96px;
+  right: 24px;
+  z-index: 40;
+}
+
+.cart-float__btn {
+  position: relative;
+  height: 52px;
+  border-radius: 999px;
+  background: #e91e8c;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 14px;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(233, 30, 140, 0.4);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cart-float__btn:hover {
+  box-shadow: 0 6px 20px rgba(233, 30, 140, 0.5);
+}
+
+.cart-float__icon {
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.cart-float__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* ── Popup ───────────────────────────────────────────────────────────────── */
+
+.cart-float__popup {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 300px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cart-float__popup-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.cart-float__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.cart-float__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cart-float__item-name {
+  font-size: 13px;
+  color: #1a1a2e;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.cart-float__item-qty {
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.cart-float__item-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e91e8c;
+  flex-shrink: 0;
+}
+
+.cart-float__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 10px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.cart-float__total-value {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1a1a2e;
+}
+
+.cart-float__go-btn {
+  display: block;
+  text-align: center;
+  background: #e91e8c;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 10px;
+  transition: background 0.2s;
+}
+
+.cart-float__go-btn:hover {
+  background: #c2185b;
+  color: #ffffff;
+}

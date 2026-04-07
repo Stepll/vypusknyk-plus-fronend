@@ -1,0 +1,586 @@
+.rc-page {
+  min-height: 100vh;
+  background: #f9fafb;
+  padding-bottom: 80px;
+}
+
+.rc-container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Top band / breadcrumbs ──────────────────────────────────────────────── */
+
+.rc-top-band {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 60%, #1a1a2e 100%);
+  padding-bottom: 24px;
+}
+
+.rc-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 88px;
+}
+
+.rc-breadcrumbs__link {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.rc-breadcrumbs__link:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.rc-breadcrumbs__sep {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.rc-breadcrumbs__current {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.rc-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 48px;
+  align-items: start;
+  padding-top: 40px;
+}
+
+/* ── Preview column ──────────────────────────────────────────────────────── */
+
+.rc-preview-col {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Design header (name + actions) ──────────────────────────────────────── */
+
+.rc-design-header {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rc-design-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.rc-design-header__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.rc-design-name__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  padding: 2px 6px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  width: 100%;
+  text-align: left;
+}
+
+.rc-design-name__btn:hover {
+  background: #f3f4f6;
+}
+
+.rc-design-name__edit-icon {
+  font-size: 13px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.rc-design-name__input {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+/* ── Ribbon preview card ─────────────────────────────────────────────────── */
+
+.rc-preview-ribbon {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 20px 16px;
+  overflow: hidden;
+}
+
+/* ── Price card ──────────────────────────────────────────────────────────── */
+
+.rc-price-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.rc-price-card__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rc-price-card__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.rc-price-card__row span:last-child {
+  font-weight: 600;
+  color: #374151;
+}
+
+.rc-price-card__divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 10px 0;
+}
+
+.rc-price-card__unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.rc-price-card__unit-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.rc-price-card__counter {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rc-price-card__counter-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  transition: background 0.12s;
+}
+
+.rc-price-card__counter-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.rc-price-card__counter-btn:disabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.rc-price-card__counter-val {
+  min-width: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.rc-price-card__total-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.rc-price-card__eq {
+  color: #9ca3af;
+}
+
+.rc-price-card__sum {
+  font-size: 18px;
+  font-weight: 800;
+  color: #e91e8c;
+  margin-left: auto;
+}
+
+.rc-preview-note {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Form column ─────────────────────────────────────────────────────────── */
+
+.rc-form-col {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Field ───────────────────────────────────────────────────────────────── */
+
+.rc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rc-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+}
+
+/* ── Section block ───────────────────────────────────────────────────────── */
+
+.rc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #f3f4f6;
+}
+
+.rc-section__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ── Chip buttons ────────────────────────────────────────────────────────── */
+
+.rc-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rc-chip {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  background: #f3f4f6;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+
+.rc-chip:hover:not(.rc-chip--disabled) {
+  background: #fce7f3;
+  color: #e91e8c;
+}
+
+.rc-chip--active {
+  background: #fce7f3;
+  color: #e91e8c;
+  border-color: #e91e8c;
+  font-weight: 600;
+}
+
+.rc-chip--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Color swatches ──────────────────────────────────────────────────────── */
+
+.rc-color-swatches {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rc-color-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.rc-color-swatch__dot {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.rc-color-swatch:hover {
+  transform: scale(1.12);
+}
+
+.rc-color-swatch--active {
+  border-color: #e91e8c;
+  transform: scale(1.12);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #e91e8c;
+}
+
+.rc-color-swatch--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Names button ────────────────────────────────────────────────────────── */
+
+.rc-names-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #7c3aed;
+  background: #ede9fe;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  padding: 0 18px;
+  height: 42px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  align-self: flex-start;
+}
+
+.rc-names-btn:hover {
+  background: #ddd6fe;
+}
+
+.rc-names-btn--filled {
+  background: #ddd6fe;
+  border-color: #7c3aed;
+}
+
+.rc-names-btn__icon {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.rc-names-hint {
+  font-size: 12px;
+  color: #7c3aed;
+  margin: 0;
+}
+
+/* ── Emblem swatches ─────────────────────────────────────────────────────── */
+
+.rc-emblem-swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rc-emblem-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  background: #f9fafb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  padding: 8px;
+}
+
+.rc-emblem-swatch svg {
+  width: 100%;
+  height: 100%;
+}
+
+.rc-emblem-swatch:hover {
+  border-color: #e91e8c;
+  color: #e91e8c;
+  background: #fce7f3;
+}
+
+.rc-emblem-swatch--active {
+  border-color: #e91e8c;
+  background: #fce7f3;
+  color: #e91e8c;
+}
+
+/* ── Font swatches ───────────────────────────────────────────────────────── */
+
+.rc-font-swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rc-font-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 72px;
+}
+
+.rc-font-swatch:hover {
+  border-color: #e91e8c;
+  background: #fce7f3;
+}
+
+.rc-font-swatch--active {
+  border-color: #e91e8c;
+  background: #fce7f3;
+}
+
+.rc-font-swatch__preview {
+  font-size: 22px;
+  color: #1a1a2e;
+  line-height: 1;
+}
+
+.rc-font-swatch--active .rc-font-swatch__preview {
+  color: #e91e8c;
+}
+
+.rc-font-swatch__label {
+  font-size: 11px;
+  color: #9ca3af;
+  font-family: system-ui, sans-serif;
+}
+
+.rc-font-swatch--active .rc-font-swatch__label {
+  color: #e91e8c;
+}
+
+.rc-font-swatch--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Emblem disabled state ───────────────────────────────────────────────── */
+
+.rc-emblem-swatch--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rc-emblem-swatch--disabled:hover {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+  color: #9ca3af;
+}
+
+/* ── Action buttons (in design header) ───────────────────────────────────── */
+
+.rc-actions__cart-btn {
+  height: 38px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  background: #e91e8c !important;
+  border-color: #e91e8c !important;
+  padding: 0 20px !important;
+}
+
+.rc-actions__cart-btn:hover {
+  background: #c2185b !important;
+  border-color: #c2185b !important;
+}
+
+.rc-actions__save-btn {
+  height: 38px !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  border-color: #e5e7eb !important;
+  color: #9ca3af !important;
+  padding: 0 16px !important;
+}
+
+/* ── Bottom add-to-cart button in form column ────────────────────────────── */
+
+.rc-form-col__cart-btn {
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: 999px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  background: #e91e8c !important;
+  border-color: #e91e8c !important;
+  margin-top: 8px;
+}
+
+.rc-form-col__cart-btn:hover {
+  background: #c2185b !important;
+  border-color: #c2185b !important;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .rc-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rc-preview-col {
+    position: static;
+  }
+}
