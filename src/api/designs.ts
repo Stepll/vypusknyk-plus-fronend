@@ -14,6 +14,6 @@ export function updateDesign(id: string, designName: string, state: RibbonState)
   return api.put<DesignResponse>(`/api/v1/designs/${id}`, { designName, state })
 }
 
-export function deleteDesign(id: string): Promise<void> {
-  return api.delete<void>(`/api/v1/designs/${id}`)
+export async function deleteDesign(id: string): Promise<void> {
+  await api.delete(`/api/v1/designs/${id}`)
 }
