@@ -3,15 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button, Tabs } from 'antd'
 import { observer } from 'mobx-react-lite'
-import { MOCK_PRODUCTS } from '../../constants/products'
-import { RibbonColor, ProductCategory } from '../../types/product'
+import { Product, RibbonColor, ProductCategory } from '../../types/product'
+import { getProduct, getProducts } from '../../api/products'
 import NamesDrawer, { NamesData, countNames } from '../../components/ui/NamesDrawer'
 import { useRootStore } from '../../stores/RootStore'
 import './ProductPage.css'
 
 const NAMED_PRICE_EXTRA = 20
 
-const COLOR_HEX: Record<RibbonColor, string> = {
+const COLOR_HEX: Record<string, string> = {
   coral: '#ff6b5b',
   'blue-yellow': '#1a56a0',
   white: '#d0d0d0',
@@ -74,38 +74,59 @@ const EMPTY_NAMES_DATA: NamesData = {
   groups: [{ className: '', names: '' }],
 }
 
+function toProduct(p: { id: number; name: string; category: string; color?: string; price: number; minOrder: number; popular: boolean; isNew: boolean; description: string; tags: string[]; imageUrl?: string }): Product {
+  return {
+    ...p,
+    category: p.category as ProductCategory,
+    color: p.color as RibbonColor | undefined,
+  }
+}
+
 const ProductPage = observer(function ProductPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { cart, toast } = useRootStore()
 
-  const product = useMemo(
-    () => MOCK_PRODUCTS.find(p => p.id === Number(id)),
-    [id]
-  )
+  const [product, setProduct] = useState<Product | null>(null)
+  const [related, setRelated] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!product) navigate('/catalog', { replace: true })
-  }, [product, navigate])
-
-  const minOrder = product?.minOrder ?? 1
-  const [qty, setQty] = useState(minOrder)
+  const [qty, setQty] = useState(1)
   const [activePhoto, setActivePhoto] = useState(0)
   const [namesDrawerOpen, setNamesDrawerOpen] = useState(false)
   const [namesData, setNamesData] = useState<NamesData>(EMPTY_NAMES_DATA)
 
-  // Reset state when navigating between product pages
   useEffect(() => {
-    setQty(product?.minOrder ?? 1)
+    setLoading(true)
+    setProduct(null)
+    setRelated([])
     setActivePhoto(0)
     setNamesDrawerOpen(false)
     setNamesData(EMPTY_NAMES_DATA)
     window.scrollTo(0, 0)
-  }, [id, product?.minOrder])
 
+    getProduct(Number(id))
+      .then(p => {
+        const prod = toProduct(p)
+        setProduct(prod)
+        setQty(prod.minOrder)
+        getProducts()
+          .then(res => setRelated(
+            res.items
+              .filter(r => r.category === p.category && r.id !== p.id)
+              .slice(0, 4)
+              .map(toProduct)
+          ))
+          .catch(() => {})
+      })
+      .catch(() => navigate('/catalog', { replace: true }))
+      .finally(() => setLoading(false))
+  }, [id, navigate])
+
+  const minOrder = product?.minOrder ?? 1
   const namedCount = useMemo(() => countNames(namesData.groups), [namesData])
 
-  if (!product) return null
+  if (loading || !product) return null
 
   const isRibbon = product.category === 'ribbon'
   const hasExcessNames = namedCount > qty
@@ -118,10 +139,6 @@ const ProductPage = observer(function ProductPage() {
     ? `linear-gradient(145deg, ${photoColor}dd, ${photoColor}77)`
     : 'linear-gradient(135deg, #ec4899, #9333ea, #4f46e5)'
 
-  const related = MOCK_PRODUCTS
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4)
-
   const totalLabel = namedCount > 0 && !hasExcessNames
     ? [
         namedRibbons > 0 && `${namedRibbons} іменних × ${product.price + NAMED_PRICE_EXTRA}`,
@@ -129,10 +146,13 @@ const ProductPage = observer(function ProductPage() {
       ].filter(Boolean).join(' + ') + ' грн'
     : `${qty} шт × ${product.price} грн`
 
+  const mainPhoto = product.imageUrl
+    ? { backgroundImage: `url(${product.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { background: bgGradient }
+
   return (
     <div className="product-page">
 
-      {/* Dark top band — gives transparent navbar visible contrast */}
       <div className="product-top-band">
         <div className="product-page__container">
           <nav className="product-breadcrumbs">
@@ -159,7 +179,7 @@ const ProductPage = observer(function ProductPage() {
             <motion.div
               key={activePhoto}
               className="product-gallery__main"
-              style={{ background: bgGradient }}
+              style={activePhoto === 0 ? mainPhoto : { background: bgGradient, opacity: 0.7 }}
               initial={{ opacity: 0.5 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
@@ -351,7 +371,14 @@ const ProductPage = observer(function ProductPage() {
                   : 'linear-gradient(135deg, #ec4899, #4f46e5)'
                 return (
                   <Link key={p.id} to={`/catalog/${p.id}`} className="product-related-card">
-                    <div className="product-related-card__photo" style={{ background: relBg }} />
+                    <div
+                      className="product-related-card__photo"
+                      style={
+                        p.imageUrl
+                          ? { backgroundImage: `url(${p.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                          : { background: relBg }
+                      }
+                    />
                     <div className="product-related-card__body">
                       <p className="product-related-card__name">{p.name}</p>
                       <span className="product-related-card__price">{p.price} грн</span>

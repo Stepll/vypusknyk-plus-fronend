@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, reaction } from 'mobx'
 import { NamesData, countNames } from '../components/ui/NamesDrawer'
 
 const NAMED_PRICE_EXTRA = 20
@@ -45,6 +45,14 @@ class CartStore {
 
   constructor() {
     makeAutoObservable(this)
+    const saved = localStorage.getItem('cart')
+    if (saved) {
+      try { this.items = JSON.parse(saved) } catch { /* ignore */ }
+    }
+    reaction(
+      () => JSON.stringify(this.items),
+      serialized => localStorage.setItem('cart', serialized),
+    )
   }
 
   get totalQty(): number {

@@ -2,8 +2,8 @@ import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Select, Tag } from 'antd'
-import { MOCK_PRODUCTS } from '../../constants/products'
-import { ProductCategory, RibbonColor, SortOption } from '../../types/product'
+import { Product, ProductCategory, RibbonColor, SortOption } from '../../types/product'
+import { getProducts } from '../../api/products'
 import './Catalog.css'
 
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
@@ -24,7 +24,7 @@ const COLOR_LABELS: Record<RibbonColor, string> = {
   black: 'Чорна',
 }
 
-const COLOR_HEX: Record<RibbonColor, string> = {
+const COLOR_HEX: Record<string, string> = {
   coral: '#ff6b5b',
   'blue-yellow': '#1a56a0',
   white: '#e8e8e8',
@@ -36,10 +36,10 @@ const COLOR_HEX: Record<RibbonColor, string> = {
 }
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'popular',   label: 'Популярні спочатку' },
-  { value: 'price-asc', label: 'Ціна: від низької' },
+  { value: 'popular',    label: 'Популярні спочатку' },
+  { value: 'price-asc',  label: 'Ціна: від низької' },
   { value: 'price-desc', label: 'Ціна: від високої' },
-  { value: 'name-asc',  label: 'За назвою А-Я' },
+  { value: 'name-asc',   label: 'За назвою А-Я' },
 ]
 
 const ALL_CATEGORIES: ProductCategory[] = ['ribbon', 'medal', 'certificate', 'accessory']
@@ -81,10 +81,26 @@ function CyclingName() {
 }
 
 export default function Catalog() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+
   const [activeCategories, setActiveCategories] = useState<ProductCategory[]>([])
   const [activeColors, setActiveColors] = useState<RibbonColor[]>([])
   const [onlyNew, setOnlyNew] = useState(false)
   const [sort, setSort] = useState<SortOption>('popular')
+
+  useEffect(() => {
+    getProducts()
+      .then(res => setProducts(
+        res.items.map(p => ({
+          ...p,
+          category: p.category as ProductCategory,
+          color: p.color as RibbonColor | undefined,
+        }))
+      ))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   const toggleCategory = (cat: ProductCategory) => {
     setActiveCategories(prev =>
@@ -107,7 +123,7 @@ export default function Catalog() {
   const hasFilters = activeCategories.length > 0 || activeColors.length > 0 || onlyNew
 
   const filtered = useMemo(() => {
-    let result = [...MOCK_PRODUCTS]
+    let result = [...products]
 
     if (activeCategories.length > 0) {
       result = result.filter(p => activeCategories.includes(p.category))
@@ -127,7 +143,7 @@ export default function Catalog() {
     }
 
     return result
-  }, [activeCategories, activeColors, onlyNew, sort])
+  }, [products, activeCategories, activeColors, onlyNew, sort])
 
   return (
     <div className="catalog-page">
@@ -238,7 +254,10 @@ export default function Catalog() {
           {/* Toolbar */}
           <div className="catalog-toolbar">
             <span className="catalog-toolbar__count">
-              {filtered.length} товар{filtered.length === 1 ? '' : filtered.length < 5 ? 'и' : 'ів'}
+              {loading
+                ? 'Завантаження...'
+                : `${filtered.length} товар${filtered.length === 1 ? '' : filtered.length < 5 ? 'и' : 'ів'}`
+              }
             </span>
             <Select
               value={sort}
@@ -281,7 +300,7 @@ export default function Catalog() {
           )}
 
           {/* Grid */}
-          {filtered.length === 0 ? (
+          {!loading && filtered.length === 0 ? (
             <div className="catalog-empty">
               <p className="catalog-empty__text">Нічого не знайдено</p>
               <button className="catalog-empty__reset" onClick={clearFilters}>
@@ -305,11 +324,11 @@ export default function Catalog() {
                       {/* Photo area */}
                       <div
                         className="product-card__photo"
-                        style={{
-                          background: product.color
-                            ? COLOR_HEX[product.color]
-                            : 'linear-gradient(135deg, #ec4899, #4f46e5)',
-                        }}
+                        style={
+                          product.imageUrl
+                            ? { backgroundImage: `url(${product.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                            : { background: product.color ? COLOR_HEX[product.color] : 'linear-gradient(135deg, #ec4899, #4f46e5)' }
+                        }
                       >
                         <div className="product-card__badges">
                           {product.popular && (

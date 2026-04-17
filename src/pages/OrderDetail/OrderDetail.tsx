@@ -1,14 +1,22 @@
-import { Link, useParams, Navigate } from 'react-router-dom'
-import { MOCK_ORDERS, STATUS_LABEL, STATUS_COLOR, STATUS_STEPS, OrderStatus } from '../../constants/mockOrders'
+import { useState, useEffect } from 'react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import { getOrder } from '../../api/orders'
+import { OrderResponse } from '../../api/types'
+import { STATUS_LABEL, STATUS_COLOR, STATUS_STEPS, OrderStatus } from '../../constants/mockOrders'
 import './OrderDetail.css'
 
-function OrderProgress({ status }: { status: OrderStatus }) {
-  const activeIdx = STATUS_STEPS.indexOf(status)
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+function OrderProgress({ status }: { status: string }) {
+  const s = status as OrderStatus
+  const activeIdx = STATUS_STEPS.indexOf(s)
   return (
     <div className="od-progress">
       {STATUS_STEPS.map((step, i) => {
         const isActive = i <= activeIdx
-        const color = isActive ? STATUS_COLOR[status] : '#e5e7eb'
+        const color = isActive ? STATUS_COLOR[s] : '#e5e7eb'
         return (
           <div key={step} className="od-progress__step">
             {i > 0 && (
@@ -22,7 +30,7 @@ function OrderProgress({ status }: { status: OrderStatus }) {
                   : { background: '#e5e7eb' }
                 }
               />
-              <span className="od-progress__label" style={{ color: isActive ? STATUS_COLOR[status] : '#9ca3af' }}>
+              <span className="od-progress__label" style={{ color: isActive ? STATUS_COLOR[s] : '#9ca3af' }}>
                 {STATUS_LABEL[step]}
               </span>
             </div>
@@ -35,9 +43,19 @@ function OrderProgress({ status }: { status: OrderStatus }) {
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>()
-  const order = MOCK_ORDERS.find(o => o.id === id)
+  const navigate = useNavigate()
+  const [order, setOrder] = useState<OrderResponse | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!order) return <Navigate to="/account" replace />
+  useEffect(() => {
+    if (!id) { navigate('/account', { replace: true }); return }
+    getOrder(id)
+      .then(setOrder)
+      .catch(() => navigate('/account', { replace: true }))
+      .finally(() => setLoading(false))
+  }, [id, navigate])
+
+  if (loading || !order) return null
 
   const DELIVERY_LABEL = order.delivery.method === 'nova-poshta' ? 'Нова Пошта' : 'Укрпошта'
   const deliveryAddress = order.delivery.method === 'nova-poshta'
@@ -53,7 +71,7 @@ export default function OrderDetail() {
             <span className="od-breadcrumbs__sep">/</span>
             <Link to="/account" className="od-breadcrumbs__link">Кабінет</Link>
             <span className="od-breadcrumbs__sep">/</span>
-            <span className="od-breadcrumbs__current">{order.id}</span>
+            <span className="od-breadcrumbs__current">{order.orderNumber}</span>
           </nav>
         </div>
       </div>
@@ -64,11 +82,11 @@ export default function OrderDetail() {
           {/* Header */}
           <div className="od-header">
             <div>
-              <h1 className="od-title">{order.id}</h1>
-              <span className="od-date">{order.date}</span>
+              <h1 className="od-title">{order.orderNumber}</h1>
+              <span className="od-date">{formatDate(order.date)}</span>
             </div>
-            <span className="od-status" style={{ color: STATUS_COLOR[order.status] }}>
-              {STATUS_LABEL[order.status]}
+            <span className="od-status" style={{ color: STATUS_COLOR[order.status as OrderStatus] ?? '#9ca3af' }}>
+              {STATUS_LABEL[order.status as OrderStatus] ?? order.status}
             </span>
           </div>
 
@@ -89,7 +107,7 @@ export default function OrderDetail() {
                     <span className="od-item__name">{item.name}</span>
                     <div className="od-item__row">
                       <span className="od-item__qty">{item.qty} шт × {item.price} грн</span>
-                      <span className="od-item__total">{item.qty * item.price} грн</span>
+                      <span className="od-item__total">{(item.qty * item.price).toFixed(2)} грн</span>
                     </div>
                   </div>
                 </div>

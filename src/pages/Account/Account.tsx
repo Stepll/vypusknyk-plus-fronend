@@ -1,20 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { Input, Button } from 'antd'
 import RibbonEditorPreview from '../../components/ui/RibbonEditorPreview'
-import { NamesData } from '../../components/ui/NamesDrawer'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
-import {
-  MOCK_ORDERS,
-  STATUS_LABEL,
-  STATUS_COLOR,
-  STATUS_STEPS,
-  OrderStatus,
-} from '../../constants/mockOrders'
+import { getUserOrders } from '../../api/orders'
+import { OrderResponse } from '../../api/types'
+import { STATUS_LABEL, STATUS_COLOR, STATUS_STEPS, OrderStatus } from '../../constants/mockOrders'
 import './Account.css'
 
 type Tab = 'profile' | 'orders' | 'designs'
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' })
+}
 
 function formatPhone(raw: string): string {
   const digits = raw.replace(/\D/g, '').slice(0, 12)
@@ -25,19 +24,20 @@ function formatPhone(raw: string): string {
   return '+' + digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8, 10) + ' ' + digits.slice(10, 12)
 }
 
-function OrderProgress({ status }: { status: OrderStatus }) {
-  const activeIdx = STATUS_STEPS.indexOf(status)
+function OrderProgress({ status }: { status: string }) {
+  const s = status as OrderStatus
+  const activeIdx = STATUS_STEPS.indexOf(s)
   return (
     <div className="ac-order-progress">
       {STATUS_STEPS.map((step, i) => {
         const isActive = i <= activeIdx
-        const color = isActive ? STATUS_COLOR[status] : '#e5e7eb'
+        const color = isActive ? STATUS_COLOR[s] : '#e5e7eb'
         return (
           <div key={step} className="ac-order-progress__step">
             {i > 0 && (
               <div
                 className="ac-order-progress__line"
-                style={{ background: i <= activeIdx ? STATUS_COLOR[status] : '#e5e7eb' }}
+                style={{ background: i <= activeIdx ? STATUS_COLOR[s] : '#e5e7eb' }}
               />
             )}
             <div className="ac-order-progress__dot-wrap">
@@ -68,7 +68,7 @@ function EmptyState({ text }: { text: string }) {
 }
 
 const Account = observer(function Account() {
-  const { auth, toast } = useRootStore()
+  const { auth, cart, toast } = useRootStore()
   const navigate = useNavigate()
 
   const [tab, setTab] = useState<Tab>('profile')
@@ -77,9 +77,20 @@ const Account = observer(function Account() {
   const [phone, setPhone]       = useState(auth.user?.phone ?? '')
   const [profileErrors, setProfileErrors] = useState<{ fullName?: string }>({})
 
-  const [newPassword, setNewPassword]     = useState('')
+  const [newPassword, setNewPassword]         = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordErrors, setPasswordErrors]   = useState<{ newPassword?: string; confirmPassword?: string }>({})
+
+  const [orders, setOrders]           = useState<OrderResponse[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
+
+  useEffect(() => {
+    setOrdersLoading(true)
+    getUserOrders()
+      .then(res => setOrders(res.items))
+      .catch(() => {})
+      .finally(() => setOrdersLoading(false))
+  }, [])
 
   if (!auth.isLoggedIn) {
     return <Navigate to="/auth" replace />
@@ -160,7 +171,6 @@ const Account = observer(function Account() {
           {tab === 'profile' && (
             <div className="ac-profile">
 
-              {/* Basic info block */}
               <div className="ac-section">
                 <h2 className="ac-section__title">Основні дані</h2>
 
@@ -188,11 +198,7 @@ const Account = observer(function Account() {
 
                 <div className="ac-field">
                   <label className="ac-label">Email</label>
-                  <Input
-                    value={auth.user!.email}
-                    disabled
-                    size="large"
-                  />
+                  <Input value={auth.user!.email} disabled size="large" />
                 </div>
 
                 <Button
@@ -205,7 +211,6 @@ const Account = observer(function Account() {
                 </Button>
               </div>
 
-              {/* Password block */}
               <div className="ac-section ac-section--password">
                 <h2 className="ac-section__title">Зміна паролю</h2>
 
@@ -242,12 +247,7 @@ const Account = observer(function Account() {
                 </Button>
               </div>
 
-              {/* Logout */}
-              <Button
-                className="ac-logout-btn"
-                onClick={handleLogout}
-                danger
-              >
+              <Button className="ac-logout-btn" onClick={handleLogout} danger>
                 Вийти з акаунту
               </Button>
             </div>
@@ -255,48 +255,54 @@ const Account = observer(function Account() {
 
           {tab === 'orders' && (
             <div className="ac-orders">
-              {MOCK_ORDERS.map(order => (
-                <div key={order.id} className="ac-order-card">
-                  <div
-                    className="ac-order-card__bar"
-                    style={{ background: STATUS_COLOR[order.status] }}
-                  />
-                  <div className="ac-order-card__body">
-                    <div className="ac-order-card__header">
-                      <div className="ac-order-card__meta">
-                        <span className="ac-order-card__number">{order.id}</span>
-                        <span className="ac-order-card__date">{order.date}</span>
-                      </div>
-                      <OrderProgress status={order.status} />
-                      <span
-                        className="ac-order-card__status-text"
-                        style={{ color: STATUS_COLOR[order.status] }}
-                      >
-                        {STATUS_LABEL[order.status]}
-                      </span>
-                    </div>
-
-                    <div className="ac-order-card__items">
-                      {order.items.map((item, i) => (
-                        <div key={i} className="ac-order-card__item">
-                          <span className="ac-order-card__item-name">{item.name}</span>
-                          <span className="ac-order-card__item-qty">{item.qty} шт × {item.price} грн</span>
+              {ordersLoading ? (
+                <p style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}>Завантаження...</p>
+              ) : orders.length === 0 ? (
+                <EmptyState text="Поки що тут немає замовлень" />
+              ) : (
+                orders.map(order => (
+                  <div key={order.id} className="ac-order-card">
+                    <div
+                      className="ac-order-card__bar"
+                      style={{ background: STATUS_COLOR[order.status as OrderStatus] ?? '#9ca3af' }}
+                    />
+                    <div className="ac-order-card__body">
+                      <div className="ac-order-card__header">
+                        <div className="ac-order-card__meta">
+                          <span className="ac-order-card__number">{order.orderNumber}</span>
+                          <span className="ac-order-card__date">{formatDate(order.date)}</span>
                         </div>
-                      ))}
-                    </div>
+                        <OrderProgress status={order.status} />
+                        <span
+                          className="ac-order-card__status-text"
+                          style={{ color: STATUS_COLOR[order.status as OrderStatus] ?? '#9ca3af' }}
+                        >
+                          {STATUS_LABEL[order.status as OrderStatus] ?? order.status}
+                        </span>
+                      </div>
 
-                    <div className="ac-order-card__footer">
-                      <span className="ac-order-card__total">{order.total} грн</span>
-                      <button
-                        className="ac-order-card__details-btn"
-                        onClick={() => navigate(`/orders/${order.id}`)}
-                      >
-                        Деталі
-                      </button>
+                      <div className="ac-order-card__items">
+                        {order.items.map((item, i) => (
+                          <div key={i} className="ac-order-card__item">
+                            <span className="ac-order-card__item-name">{item.name}</span>
+                            <span className="ac-order-card__item-qty">{item.qty} шт × {item.price} грн</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="ac-order-card__footer">
+                        <span className="ac-order-card__total">{order.total} грн</span>
+                        <button
+                          className="ac-order-card__details-btn"
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                        >
+                          Деталі
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
 

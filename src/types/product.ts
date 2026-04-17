@@ -13,4 +13,5 @@ export interface Product {
   isNew: boolean
   description: string
   tags: string[]
+  imageUrl?: string
 }

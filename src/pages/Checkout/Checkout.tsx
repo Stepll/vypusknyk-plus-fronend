@@ -4,6 +4,7 @@ import { Button, Input } from 'antd'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { cartItemTotal } from '../../stores/CartStore'
+import { createOrder } from '../../api/orders'
 import './Checkout.css'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -81,12 +82,22 @@ const PRINT_LABELS: Record<string, string> = { foil: 'Фольга', film: 'Пл
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const Checkout = observer(function Checkout() {
-  const { cart } = useRootStore()
+  const { cart, auth, toast } = useRootStore()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState<CheckoutForm>(INITIAL)
+  const [form, setForm] = useState<CheckoutForm>(() => ({
+    ...INITIAL,
+    fullName: auth.user?.fullName ?? '',
+    phone: auth.user?.phone ?? '+380',
+    email: auth.user?.email ?? '',
+  }))
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  if (!auth.isLoggedIn) {
+    return <Navigate to="/auth" replace />
+  }
 
   if (cart.items.length === 0 && !submitted) {
     return <Navigate to="/cart" replace />
@@ -97,15 +108,42 @@ const Checkout = observer(function Checkout() {
     if (errors[key]) setErrors(prev => { const n = { ...prev }; delete n[key]; return n })
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const e = validate(form)
     setErrors(e)
     if (Object.keys(e).length > 0) return
 
-    setSubmitted(true)
-    const orderNumber = 'VIP-' + Math.random().toString(36).slice(2, 7).toUpperCase()
-    cart.clear()
-    navigate('/order-success', { state: { orderNumber } })
+    setSubmitting(true)
+    try {
+      const order = await createOrder({
+        items: cart.items.map(item => ({
+          productId: item.productId,
+          name: item.productName,
+          qty: item.qty,
+          price: cartItemTotal(item) / item.qty,
+        })),
+        delivery: {
+          method: form.delivery,
+          city: form.delivery === 'nova-poshta' ? form.city : undefined,
+          warehouse: form.delivery === 'nova-poshta' ? form.warehouse : undefined,
+          postalCode: form.delivery === 'ukrposhta' ? form.postalCode : undefined,
+        },
+        recipient: {
+          fullName: form.fullName,
+          phone: form.phone,
+        },
+        payment: form.payment,
+        email: form.email || undefined,
+        comment: form.comment || undefined,
+      })
+      setSubmitted(true)
+      cart.clear()
+      navigate('/order-success', { state: { orderNumber: order.orderNumber } })
+    } catch (err) {
+      toast.show(err instanceof Error ? err.message : 'Помилка при оформленні замовлення')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -243,7 +281,7 @@ const Checkout = observer(function Checkout() {
                   <span className="co-delivery-card__label">Оплата при отриманні</span>
                 </button>
                 <button
-                  className={`co-delivery-card co-delivery-card--disabled`}
+                  className="co-delivery-card co-delivery-card--disabled"
                   disabled
                 >
                   <span className="co-delivery-card__radio" />
@@ -301,6 +339,7 @@ const Checkout = observer(function Checkout() {
               type="primary"
               className="co-sidebar__submit-btn"
               onClick={handleSubmit}
+              loading={submitting}
             >
               Підтвердити замовлення
             </Button>
