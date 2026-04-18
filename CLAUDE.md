@@ -18,7 +18,7 @@
 | Управління станом | MobX |
 | Роутинг | React Router DOM |
 | Стилі | Tailwind CSS + окремі CSS файли на компонент |
-| Backend | ASP.NET Core Web API (буде реалізовано пізніше) |
+| Backend | ASP.NET Core Web API (.NET 8), задеплоєний на Contabo |
 | База даних | PostgreSQL + Entity Framework Core |
 
 ---
@@ -126,6 +126,7 @@ src/
     NotFound/                      # * — 404
     OrderDetail/                   # /orders/:id — деталі замовлення
     OrderSuccess/                  # /order-success — успішне замовлення
+    GuestOrders/                   # /orders/guest — замовлення гостя (без реєстрації)
     ProductPage/                   # /catalog/:id — картка товару
     RibbonConstructor/             # /constructor/ribbon — конструктор стрічок
 
@@ -146,8 +147,8 @@ src/
 
   stores/                          # MobX стори
     RootStore.ts                   # Кореневий стор, React Context
-    AuthStore.ts                   # Аутентифікація, збережені дизайни, pendingDesign
-    CartStore.ts                   # Кошик (товари, кількість, підсумок)
+    AuthStore.ts                   # Аутентифікація, refresh tokens, збережені дизайни, claim guestToken після логіну
+    CartStore.ts                   # Кошик в localStorage; productId: number | null (null для кастомних стрічок)
     ToastStore.ts                  # Глобальні toast-сповіщення
 
   constants/
@@ -164,7 +165,13 @@ src/
     product.ts                     # Тип Product
 
   api/
-    client.ts                      # Базовий API клієнт (VITE_API_URL)
+    client.ts                      # Базовий API клієнт (VITE_API_URL); перехоплює 401, auto-refresh JWT, dispatch auth:session-expired
+    token.ts                       # getToken/setToken/getRefreshToken/setRefreshToken (localStorage)
+    guest.ts                       # getGuestToken (UUID), getGuestOrders, claimGuestOrders
+    orders.ts                      # createOrder, getUserOrders, getOrder
+    products.ts                    # getProducts, getProduct
+    designs.ts                     # fetchDesigns, createDesign, updateDesign, deleteDesign
+    types.ts                       # Shared API types (OrderResponse, ProductResponse, etc.)
 
   assets/
     hero.png                       # Зображення для головної сторінки
@@ -192,9 +199,18 @@ src/
 
 ## API
 
-- Базовий URL через змінну середовища: `VITE_API_URL`
+- Базовий URL через змінну середовища: `VITE_API_URL` (prod: `https://75.119.152.4.sslip.io`)
 - Всі API виклики через `src/api/` — ніколи не викликати `fetch`/`axios` напряму в компонентах або сторах
 - Використовувати async/await, не `.then()` ланцюжки
+- `client.ts` автоматично оновлює JWT через refresh token при 401; при невдачі dispatch `auth:session-expired`
+- Гостьові сесії: `guestToken` (UUID) генерується в `api/guest.ts` і зберігається в localStorage
+
+## Деплой
+
+- Фронт: Vercel, `https://vypusknyk-plus-fronend.vercel.app`, автодеплой при push до main
+- Бек: Contabo VPS `75.119.152.4`, Docker Compose, HTTPS через Nginx + sslip.io
+- Репо фронту: `https://github.com/Stepll/vypusknyk-plus-fronend`
+- Репо беку: `https://github.com/Stepll/vypusknyk-plus-backend`
 
 ---
 
