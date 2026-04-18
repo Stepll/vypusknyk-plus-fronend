@@ -58,8 +58,11 @@
 
 .os-actions {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
   margin-top: 24px;
+  width: 100%;
 }
 
 .os-btn {
