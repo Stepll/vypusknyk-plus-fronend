@@ -9,3 +9,15 @@ export function setToken(token: string | null): void {
     localStorage.removeItem('token')
   }
 }
+
+export function getRefreshToken(): string | null {
+  return localStorage.getItem('refreshToken')
+}
+
+export function setRefreshToken(token: string | null): void {
+  if (token) {
+    localStorage.setItem('refreshToken', token)
+  } else {
+    localStorage.removeItem('refreshToken')
+  }
+}

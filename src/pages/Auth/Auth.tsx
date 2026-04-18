@@ -62,14 +62,19 @@ const Auth = observer(function Auth() {
   async function handleSubmit() {
     const e = validate()
     if (Object.keys(e).length > 0) { setErrors(e); return }
-    if (mode === 'login') {
-      await auth.login(form.email, form.password)
-      toast.show('Ви увійшли до акаунту')
-    } else {
-      await auth.register(form.email, form.password)
-      toast.show('Акаунт створено')
+    try {
+      if (mode === 'login') {
+        await auth.login(form.email, form.password)
+        toast.show('Ви увійшли до акаунту')
+      } else {
+        await auth.register(form.email, form.password)
+        toast.show('Акаунт створено')
+      }
+      navigate('/')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Щось пішло не так'
+      toast.show(msg)
     }
-    navigate('/')
   }
 
   function handleGoogle() {

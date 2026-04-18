@@ -2,7 +2,7 @@ import { api } from './client'
 import { OrderResponse } from './types'
 
 export interface CreateOrderPayload {
-  items: { productId: number; name: string; qty: number; price: number }[]
+  items: { productId: number | null; name: string; qty: number; price: number }[]
   delivery: { method: string; city?: string; warehouse?: string; postalCode?: string }
   recipient: { fullName: string; phone: string }
   payment: string

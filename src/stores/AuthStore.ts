@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx'
-import { api, setToken } from '../api/client'
+import { api, setToken, setRefreshToken } from '../api/client'
 import { RibbonState } from '../constants/ribbonRules'
 import {
   fetchDesigns,
@@ -15,6 +15,7 @@ interface AuthResponseDto {
   fullName: string
   phone: string | null
   token: string
+  refreshToken: string
 }
 
 export interface AuthUser {
@@ -42,6 +43,14 @@ class AuthStore {
   constructor() {
     makeAutoObservable(this)
     this.restoreSession()
+    window.addEventListener('auth:session-expired', () => {
+      runInAction(() => {
+        this.user = null
+        this.savedDesigns = []
+        this.pendingDesign = null
+        this.error = null
+      })
+    })
   }
 
   get isLoggedIn(): boolean {
@@ -61,8 +70,9 @@ class AuthStore {
     }
   }
 
-  private saveSession(user: AuthUser, token: string): void {
-    setToken(token)
+  private saveSession(user: AuthUser, dto: AuthResponseDto): void {
+    setToken(dto.token)
+    setRefreshToken(dto.refreshToken)
     localStorage.setItem('user', JSON.stringify(user))
   }
 
@@ -108,7 +118,7 @@ class AuthStore {
         this.user = user
         this.loading = false
       })
-      this.saveSession(user, dto.token)
+      this.saveSession(user, dto)
       this.loadDesigns()
     } catch (e) {
       runInAction(() => {
@@ -134,7 +144,7 @@ class AuthStore {
         this.user = user
         this.loading = false
       })
-      this.saveSession(user, dto.token)
+      this.saveSession(user, dto)
     } catch (e) {
       runInAction(() => {
         this.error = e instanceof Error ? e.message : 'Помилка реєстрації'
@@ -154,7 +164,7 @@ class AuthStore {
         this.user = user
         this.loading = false
       })
-      this.saveSession(user, dto.token)
+      this.saveSession(user, dto)
     } catch (e) {
       runInAction(() => {
         this.loading = false
@@ -232,6 +242,7 @@ class AuthStore {
     this.pendingDesign = null
     this.error = null
     setToken(null)
+    setRefreshToken(null)
     localStorage.removeItem('user')
   }
 }

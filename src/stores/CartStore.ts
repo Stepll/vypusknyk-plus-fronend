@@ -19,7 +19,7 @@ export interface RibbonCustomization {
 
 export interface CartItem {
   id: string            // unique per addition (uuid-like)
-  productId: number
+  productId: number | null
   productName: string
   productCategory: string
   productColor?: string

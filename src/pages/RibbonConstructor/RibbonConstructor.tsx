@@ -131,7 +131,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
 
   function handleAddToCart() {
     cart.addItem({
-      productId: 0,
+      productId: null,
       productName: `Стрічка: ${designName}`,
       productCategory: 'ribbon',
       productColor: undefined,

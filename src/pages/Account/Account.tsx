@@ -349,7 +349,7 @@ const Account = observer(function Account() {
                             className="ac-design-card__cart-btn"
                             onClick={() => {
                               cart.addItem({
-                                productId: 0,
+                                productId: null,
                                 productName: `Стрічка: ${design.designName}`,
                                 productCategory: 'ribbon',
                                 basePrice: 50,
