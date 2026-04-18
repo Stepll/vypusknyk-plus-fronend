@@ -130,7 +130,7 @@ const Checkout = observer(function Checkout() {
         },
         recipient: {
           fullName: form.fullName,
-          phone: form.phone,
+          phone: '+' + phoneDigits(form.phone),
         },
         payment: form.payment,
         email: form.email || undefined,
