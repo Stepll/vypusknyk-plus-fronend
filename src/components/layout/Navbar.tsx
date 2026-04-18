@@ -11,6 +11,7 @@ const Navbar = observer(function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [hidden, setHidden] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [hasGuestOrders, setHasGuestOrders] = useState(false)
   const lastScrollY = useRef(0)
   const location = useLocation()
   const navigate = useNavigate()
@@ -30,6 +31,10 @@ const Navbar = observer(function Navbar() {
   useEffect(() => {
     setMenuOpen(false)
   }, [location])
+
+  useEffect(() => {
+    setHasGuestOrders(!auth.isLoggedIn && !!localStorage.getItem('guestToken'))
+  }, [location, auth.isLoggedIn])
 
   const isLight = !scrolled
 
@@ -62,6 +67,20 @@ const Navbar = observer(function Navbar() {
               {link.label}
             </Link>
           ))}
+          {hasGuestOrders && (
+            <Link
+              to="/orders/guest"
+              style={{ position: 'relative' }}
+              className={`navbar__link ${
+                location.pathname === '/orders/guest'
+                  ? isLight ? 'navbar__link--active-light' : 'navbar__link--active-dark'
+                  : isLight ? 'navbar__link--light' : 'navbar__link--dark'
+              }`}
+            >
+              Замовлення
+              <span className="navbar__guest-dot" />
+            </Link>
+          )}
         </nav>
 
         <div className="navbar__actions">
@@ -81,23 +100,13 @@ const Navbar = observer(function Navbar() {
               <span className="navbar__user-name">{auth.user!.name}</span>
             </button>
           ) : (
-            <>
-              <button
-                className={`navbar__icon-btn ${isLight ? 'navbar__icon-btn--light' : 'navbar__icon-btn--dark'}`}
-                onClick={() => navigate('/orders/guest')}
-                aria-label="Мої замовлення"
-                style={{ fontSize: 13, gap: 4 }}
-              >
-                Замовлення
-              </button>
-              <button
-                className={`navbar__icon-btn ${isLight ? 'navbar__icon-btn--light' : 'navbar__icon-btn--dark'}`}
-                onClick={() => navigate('/auth')}
-                aria-label="Увійти"
-              >
-                <UserOutlined />
-              </button>
-            </>
+            <button
+              className={`navbar__icon-btn ${isLight ? 'navbar__icon-btn--light' : 'navbar__icon-btn--dark'}`}
+              onClick={() => navigate('/auth')}
+              aria-label="Увійти"
+            >
+              <UserOutlined />
+            </button>
           )}
         </div>
 
@@ -151,6 +160,16 @@ const Navbar = observer(function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              {hasGuestOrders && (
+                <Link
+                  to="/orders/guest"
+                  style={{ position: 'relative', display: 'inline-block', width: 'fit-content' }}
+                  className={`navbar__mobile-link ${location.pathname === '/orders/guest' ? 'navbar__mobile-link--active' : ''}`}
+                >
+                  Замовлення
+                  <span className="navbar__guest-dot" />
+                </Link>
+              )}
               <Link to="/cart" className="navbar__mobile-link">
                 Корзина {cart.totalQty > 0 && `(${cart.totalQty})`}
               </Link>
