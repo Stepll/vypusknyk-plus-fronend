@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Link, useLocation, Navigate, useNavigate } from 'react-router-dom'
 import { Button } from 'antd'
+import { observer } from 'mobx-react-lite'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRootStore } from '../../stores/RootStore'
 import './OrderSuccess.css'
 
-export default function OrderSuccess() {
+const OrderSuccess = observer(function OrderSuccess() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { auth } = useRootStore()
   const orderNumber = (location.state as { orderNumber?: string })?.orderNumber
 
   const [exiting, setExiting] = useState(false)
@@ -86,8 +89,14 @@ export default function OrderSuccess() {
               <Button type="primary" className="os-btn os-btn--primary" onClick={() => handleNavigate('/')}>
                 На головну
               </Button>
+              <Button
+                className="os-btn os-btn--secondary"
+                onClick={() => handleNavigate(auth.isLoggedIn ? '/account' : '/orders/guest')}
+              >
+                Мої замовлення
+              </Button>
               <Button className="os-btn os-btn--secondary" onClick={() => handleNavigate('/catalog')}>
-                Повернутись до каталогу
+                До каталогу
               </Button>
             </motion.div>
           </motion.div>
@@ -95,4 +104,6 @@ export default function OrderSuccess() {
       </AnimatePresence>
     </div>
   )
-}
+})
+
+export default OrderSuccess

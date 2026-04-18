@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { cartItemTotal } from '../../stores/CartStore'
 import { createOrder } from '../../api/orders'
+import { getGuestToken } from '../../api/guest'
 import './Checkout.css'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -95,10 +96,6 @@ const Checkout = observer(function Checkout() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  if (!auth.isLoggedIn) {
-    return <Navigate to="/auth" replace />
-  }
-
   if (cart.items.length === 0 && !submitted) {
     return <Navigate to="/cart" replace />
   }
@@ -135,6 +132,7 @@ const Checkout = observer(function Checkout() {
         payment: form.payment,
         email: form.email || undefined,
         comment: form.comment || undefined,
+        guestToken: auth.isLoggedIn ? undefined : getGuestToken(),
       })
       setSubmitted(true)
       cart.clear()

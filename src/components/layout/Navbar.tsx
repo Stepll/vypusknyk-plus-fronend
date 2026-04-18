@@ -81,13 +81,23 @@ const Navbar = observer(function Navbar() {
               <span className="navbar__user-name">{auth.user!.name}</span>
             </button>
           ) : (
-            <button
-              className={`navbar__icon-btn ${isLight ? 'navbar__icon-btn--light' : 'navbar__icon-btn--dark'}`}
-              onClick={() => navigate('/auth')}
-              aria-label="Увійти"
-            >
-              <UserOutlined />
-            </button>
+            <>
+              <button
+                className={`navbar__icon-btn ${isLight ? 'navbar__icon-btn--light' : 'navbar__icon-btn--dark'}`}
+                onClick={() => navigate('/orders/guest')}
+                aria-label="Мої замовлення"
+                style={{ fontSize: 13, gap: 4 }}
+              >
+                Замовлення
+              </button>
+              <button
+                className={`navbar__icon-btn ${isLight ? 'navbar__icon-btn--light' : 'navbar__icon-btn--dark'}`}
+                onClick={() => navigate('/auth')}
+                aria-label="Увійти"
+              >
+                <UserOutlined />
+              </button>
+            </>
           )}
         </div>
 

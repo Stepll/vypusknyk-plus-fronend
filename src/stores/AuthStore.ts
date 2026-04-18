@@ -1,5 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx'
 import { api, setToken, setRefreshToken } from '../api/client'
+import { getGuestToken, claimGuestOrders } from '../api/guest'
 import { RibbonState } from '../constants/ribbonRules'
 import {
   fetchDesigns,
@@ -120,6 +121,7 @@ class AuthStore {
       })
       this.saveSession(user, dto)
       this.loadDesigns()
+      claimGuestOrders(getGuestToken()).catch(() => {})
     } catch (e) {
       runInAction(() => {
         this.error = e instanceof Error ? e.message : 'Помилка входу'
@@ -145,6 +147,7 @@ class AuthStore {
         this.loading = false
       })
       this.saveSession(user, dto)
+      claimGuestOrders(getGuestToken()).catch(() => {})
     } catch (e) {
       runInAction(() => {
         this.error = e instanceof Error ? e.message : 'Помилка реєстрації'

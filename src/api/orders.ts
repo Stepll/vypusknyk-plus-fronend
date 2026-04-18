@@ -8,6 +8,7 @@ export interface CreateOrderPayload {
   payment: string
   email?: string
   comment?: string
+  guestToken?: string
 }
 
 export function createOrder(payload: CreateOrderPayload): Promise<OrderResponse> {
