@@ -118,6 +118,8 @@ const Checkout = observer(function Checkout() {
           name: item.productName,
           qty: item.qty,
           price: cartItemTotal(item) / item.qty,
+          namesData: item.namesData ?? undefined,
+          ribbonCustomization: item.ribbonCustomization,
         })),
         delivery: {
           method: form.delivery,
