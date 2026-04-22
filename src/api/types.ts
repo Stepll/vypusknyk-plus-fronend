@@ -38,7 +38,7 @@ export interface OrderRecipientResponse {
 }
 
 export interface OrderResponse {
-  id: string
+  id: number
   orderNumber: string
   date: string
   status: string
@@ -51,7 +51,7 @@ export interface OrderResponse {
 }
 
 export interface DesignResponse {
-  id: string
+  id: number
   designName: string
   savedAt: string
   state: unknown

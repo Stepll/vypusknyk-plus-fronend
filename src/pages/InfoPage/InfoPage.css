@@ -1,0 +1,176 @@
+.info-page {
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.info-page__hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 60%, #1a1a2e 100%);
+  padding: 80px 24px 64px;
+}
+
+.info-page__hero-content {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.info-page__title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.info-page__updated {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+.info-page__container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+/* ── Markdown body ─────────────────────────────────────────────────────────── */
+
+.info-page__body {
+  background: #fff;
+  border-radius: 16px;
+  padding: 48px 56px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  line-height: 1.8;
+  color: #374151;
+  font-size: 15px;
+}
+
+.info-page__body h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.info-page__body h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 36px 0 14px;
+}
+
+.info-page__body h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 24px 0 10px;
+}
+
+.info-page__body p {
+  margin: 0 0 14px;
+}
+
+.info-page__body ul,
+.info-page__body ol {
+  margin: 0 0 14px;
+  padding-left: 24px;
+}
+
+.info-page__body li {
+  margin-bottom: 6px;
+}
+
+.info-page__body strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.info-page__body a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.info-page__body a:hover {
+  text-decoration: underline;
+}
+
+.info-page__body blockquote {
+  margin: 16px 0;
+  padding: 12px 20px;
+  background: #f0fdf4;
+  border-left: 4px solid #10b981;
+  border-radius: 0 8px 8px 0;
+  color: #065f46;
+}
+
+.info-page__body blockquote p {
+  margin: 0;
+}
+
+.info-page__body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.info-page__body th,
+.info-page__body td {
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.info-page__body th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-page__body hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 28px 0;
+}
+
+.info-page__body code {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+
+.info-page__skeleton {
+  height: 400px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s infinite;
+  border-radius: 16px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.info-page__not-found {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 18px;
+}
+
+@media (max-width: 640px) {
+  .info-page__title {
+    font-size: 26px;
+  }
+
+  .info-page__body {
+    padding: 28px 24px;
+  }
+}

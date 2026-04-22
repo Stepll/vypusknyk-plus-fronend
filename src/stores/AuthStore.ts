@@ -11,7 +11,7 @@ import {
 import { DesignResponse } from '../api/types'
 
 interface AuthResponseDto {
-  id: string
+  id: number
   email: string
   fullName: string
   phone: string | null
@@ -20,7 +20,7 @@ interface AuthResponseDto {
 }
 
 export interface AuthUser {
-  id: string
+  id: number
   email: string
   name: string
   fullName: string
@@ -28,7 +28,7 @@ export interface AuthUser {
 }
 
 export interface SavedDesign {
-  id: string
+  id: number | string  // number = real DB id, string = optimistic temp id
   designName: string
   savedAt: string
   state: RibbonState
@@ -224,9 +224,9 @@ class AuthStore {
     }
   }
 
-  removeDesign(id: string): void {
+  removeDesign(id: number | string): void {
     this.savedDesigns = this.savedDesigns.filter(d => d.id !== id)
-    deleteDesign(id).catch(() => {})
+    if (typeof id === 'number') deleteDesign(id).catch(() => {})
   }
 
   loadDesign(design: SavedDesign): void {
