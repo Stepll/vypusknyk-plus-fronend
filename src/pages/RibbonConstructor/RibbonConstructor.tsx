@@ -101,6 +101,12 @@ const RibbonConstructor = observer(function RibbonConstructor() {
     if (pending) {
       setDesignName(pending.designName)
       setForm(pending.state)
+      if (pending.state.classes?.length) {
+        setNamesData({
+          school: pending.state.school,
+          groups: pending.state.classes.map(c => ({ className: c.className, names: c.names })),
+        })
+      }
     }
   }, [])
 
@@ -125,7 +131,13 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   }
 
   function handleSave() {
-    auth.saveDesign(designName, form)
+    const stateWithClasses = {
+      ...form,
+      classes: namesData.groups
+        .filter(g => g.className.trim() !== '' || g.names.trim() !== '')
+        .map(g => ({ className: g.className, names: g.names })),
+    }
+    auth.saveDesign(designName, stateWithClasses)
     toast.show(`Дизайн "${designName}" збережено`)
   }
 

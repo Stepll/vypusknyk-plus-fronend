@@ -20,6 +20,11 @@ export type TextColor = 'white' | 'black' | 'gold'
 export type ExtraTextColor = 'white' | 'yellow'
 export type Font = 'classic' | 'italic' | 'print'
 
+export interface RibbonClassGroup {
+  className: string
+  names: string
+}
+
 export interface RibbonState {
   mainText: string
   school: string
@@ -31,6 +36,7 @@ export interface RibbonState {
   extraTextColor: ExtraTextColor
   font: Font
   emblemKey: number
+  classes: RibbonClassGroup[]
 }
 
 export const MAIN_TEXT_3D = 'Випускник 2026'
@@ -169,6 +175,7 @@ export const DEFAULT_RIBBON_STATE: RibbonState = {
   extraTextColor: 'white',
   font: 'classic',
   emblemKey: 0,
+  classes: [],
 }
 
 // ─── Helper: resolve disabled for any option ──────────────────────────────────
