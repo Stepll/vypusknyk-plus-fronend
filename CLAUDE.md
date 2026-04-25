@@ -149,6 +149,7 @@ src/
     guest.ts        # getGuestToken (UUID), getGuestOrders, claimGuestOrders
     orders.ts       # createOrder, getUserOrders, getOrder
     products.ts     # getProducts, getProduct
+    categories.ts   # getProductCategories() → GET /api/v1/product-categories (ProductCategoryResponse[])
     designs.ts      # fetchDesigns, createDesign, updateDesign, deleteDesign
     types.ts        # Shared API types
 
@@ -162,7 +163,7 @@ src/
 
   types/
     nav.ts
-    product.ts
+    product.ts      # Product тепер має categoryId/categoryName/subcategoryId?/subcategoryName? (замість enum Category)
 
   assets/
     hero.png
