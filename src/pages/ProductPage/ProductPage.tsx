@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button, Tabs } from 'antd'
 import { observer } from 'mobx-react-lite'
-import { Product, RibbonColor, ProductCategory } from '../../types/product'
+import { Product, RibbonColor } from '../../types/product'
 import { getProduct, getProducts } from '../../api/products'
 import NamesDrawer, { NamesData, countNames } from '../../components/ui/NamesDrawer'
 import { useRootStore } from '../../stores/RootStore'
@@ -22,15 +22,8 @@ const COLOR_HEX: Record<string, string> = {
   black: '#333333',
 }
 
-const CATEGORY_LABELS: Record<ProductCategory, string> = {
-  ribbon: 'Стрічки',
-  medal: 'Медалі',
-  certificate: 'Грамоти',
-  accessory: 'Аксесуари',
-}
-
-const CATEGORY_SPECS: Record<ProductCategory, { label: string; value: string }[]> = {
-  ribbon: [
+const CATEGORY_SPECS: Record<string, { label: string; value: string }[]> = {
+  'Стрічки': [
     { label: 'Матеріал', value: 'Поліестер 100%' },
     { label: 'Ширина', value: '10 см' },
     { label: 'Довжина', value: '90–110 см' },
@@ -38,7 +31,7 @@ const CATEGORY_SPECS: Record<ProductCategory, { label: string; value: string }[]
     { label: 'Персоналізація', value: "Ім'я, клас, школа" },
     { label: 'Термін виготовлення', value: '5 робочих днів' },
   ],
-  medal: [
+  'Медалі': [
     { label: 'Матеріал', value: 'Цинковий сплав' },
     { label: 'Діаметр', value: '70 мм' },
     { label: 'Покриття', value: 'Золото / Срібло / Бронза' },
@@ -46,20 +39,24 @@ const CATEGORY_SPECS: Record<ProductCategory, { label: string; value: string }[]
     { label: 'Кріплення', value: 'Стрічка 10 мм' },
     { label: 'Термін виготовлення', value: '5 робочих днів' },
   ],
-  certificate: [
+  'Грамоти': [
     { label: 'Формат', value: 'A4 (210 × 297 мм)' },
     { label: 'Папір', value: 'Дизайнерський, 200 г/м²' },
     { label: 'Друк', value: 'Кольоровий цифровий' },
     { label: 'Персоналізація', value: "Ім'я, клас, дата" },
     { label: 'Термін виготовлення', value: '5 робочих днів' },
   ],
-  accessory: [
+  'Аксесуари': [
     { label: 'Матеріал', value: 'Метал / тканина' },
     { label: 'Оздоблення', value: 'Гравіювання на замовлення' },
     { label: 'Розмір', value: 'Вказано в описі' },
     { label: 'Термін виготовлення', value: '5 робочих днів' },
   ],
 }
+
+const DEFAULT_SPECS = [
+  { label: 'Термін виготовлення', value: '5 робочих днів' },
+]
 
 const DELIVERY_ROWS = [
   { title: 'Стандартне виготовлення', value: '5 робочих днів' },
@@ -74,10 +71,9 @@ const EMPTY_NAMES_DATA: NamesData = {
   groups: [{ className: '', names: '' }],
 }
 
-function toProduct(p: { id: number; name: string; category: string; color?: string; price: number; minOrder: number; popular: boolean; isNew: boolean; description: string; tags: string[]; imageUrl?: string }): Product {
+function toProduct(p: { id: number; name: string; categoryId: number; categoryName: string; subcategoryId: number | null; subcategoryName: string | null; color?: string; price: number; minOrder: number; popular: boolean; isNew: boolean; description: string; tags: string[]; imageUrl?: string }): Product {
   return {
     ...p,
-    category: p.category as ProductCategory,
     color: p.color as RibbonColor | undefined,
   }
 }
@@ -113,7 +109,7 @@ const ProductPage = observer(function ProductPage() {
         getProducts()
           .then(res => setRelated(
             res.items
-              .filter(r => r.category === p.category && r.id !== p.id)
+              .filter(r => r.categoryId === p.categoryId && r.id !== p.id)
               .slice(0, 4)
               .map(toProduct)
           ))
@@ -128,7 +124,7 @@ const ProductPage = observer(function ProductPage() {
 
   if (loading || !product) return null
 
-  const isRibbon = product.category === 'ribbon'
+  const isRibbon = product.categoryName === 'Стрічки'
   const hasExcessNames = namedCount > qty
   const namedRibbons = Math.min(namedCount, qty)
   const regularRibbons = Math.max(0, qty - namedCount)
@@ -150,6 +146,8 @@ const ProductPage = observer(function ProductPage() {
     ? { backgroundImage: `url(${product.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : { background: bgGradient }
 
+  const specs = CATEGORY_SPECS[product.categoryName] ?? DEFAULT_SPECS
+
   return (
     <div className="product-page">
 
@@ -161,7 +159,7 @@ const ProductPage = observer(function ProductPage() {
             <Link to="/catalog" className="product-breadcrumbs__link">Каталог</Link>
             <span className="product-breadcrumbs__sep">/</span>
             <Link to="/catalog" className="product-breadcrumbs__link">
-              {CATEGORY_LABELS[product.category]}
+              {product.categoryName}
             </Link>
             <span className="product-breadcrumbs__sep">/</span>
             <span className="product-breadcrumbs__current">{product.name}</span>
@@ -288,7 +286,7 @@ const ProductPage = observer(function ProductPage() {
                   cart.addItem({
                     productId: product.id,
                     productName: product.name,
-                    productCategory: product.category,
+                    productCategory: product.categoryName,
                     productColor: product.color,
                     basePrice: product.price,
                     qty,
@@ -332,7 +330,7 @@ const ProductPage = observer(function ProductPage() {
                 children: (
                   <table className="product-specs-table">
                     <tbody>
-                      {CATEGORY_SPECS[product.category].map(s => (
+                      {specs.map(s => (
                         <tr key={s.label} className="product-specs-row">
                           <td className="product-specs-row__label">{s.label}</td>
                           <td className="product-specs-row__value">{s.value}</td>

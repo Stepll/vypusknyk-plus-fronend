@@ -2,16 +2,11 @@ import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Select, Tag } from 'antd'
-import { Product, ProductCategory, RibbonColor, SortOption } from '../../types/product'
+import { Product, RibbonColor, SortOption } from '../../types/product'
 import { getProducts } from '../../api/products'
+import { getProductCategories } from '../../api/categories'
+import type { ProductCategoryResponse } from '../../api/types'
 import './Catalog.css'
-
-const CATEGORY_LABELS: Record<ProductCategory, string> = {
-  ribbon: 'Стрічки',
-  medal: 'Медалі',
-  certificate: 'Грамоти',
-  accessory: 'Аксесуари',
-}
 
 const COLOR_LABELS: Record<RibbonColor, string> = {
   coral: 'Корал',
@@ -42,7 +37,6 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name-asc',   label: 'За назвою А-Я' },
 ]
 
-const ALL_CATEGORIES: ProductCategory[] = ['ribbon', 'medal', 'certificate', 'accessory']
 const ALL_COLORS: RibbonColor[] = ['coral', 'blue-yellow', 'white', 'gold', 'red', 'green', 'purple', 'black']
 
 const PROMO_NAMES = [
@@ -82,19 +76,23 @@ function CyclingName() {
 
 export default function Catalog() {
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<ProductCategoryResponse[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [activeCategories, setActiveCategories] = useState<ProductCategory[]>([])
+  const [activeCategoryIds, setActiveCategoryIds] = useState<number[]>([])
   const [activeColors, setActiveColors] = useState<RibbonColor[]>([])
   const [onlyNew, setOnlyNew] = useState(false)
   const [sort, setSort] = useState<SortOption>('popular')
+
+  useEffect(() => {
+    getProductCategories().then(setCategories).catch(() => {})
+  }, [])
 
   useEffect(() => {
     getProducts()
       .then(res => setProducts(
         res.items.map(p => ({
           ...p,
-          category: p.category as ProductCategory,
           color: p.color as RibbonColor | undefined,
         }))
       ))
@@ -102,9 +100,9 @@ export default function Catalog() {
       .finally(() => setLoading(false))
   }, [])
 
-  const toggleCategory = (cat: ProductCategory) => {
-    setActiveCategories(prev =>
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+  const toggleCategory = (id: number) => {
+    setActiveCategoryIds(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     )
   }
 
@@ -115,18 +113,18 @@ export default function Catalog() {
   }
 
   const clearFilters = () => {
-    setActiveCategories([])
+    setActiveCategoryIds([])
     setActiveColors([])
     setOnlyNew(false)
   }
 
-  const hasFilters = activeCategories.length > 0 || activeColors.length > 0 || onlyNew
+  const hasFilters = activeCategoryIds.length > 0 || activeColors.length > 0 || onlyNew
 
   const filtered = useMemo(() => {
     let result = [...products]
 
-    if (activeCategories.length > 0) {
-      result = result.filter(p => activeCategories.includes(p.category))
+    if (activeCategoryIds.length > 0) {
+      result = result.filter(p => activeCategoryIds.includes(p.categoryId))
     }
     if (activeColors.length > 0) {
       result = result.filter(p => p.color && activeColors.includes(p.color))
@@ -143,7 +141,7 @@ export default function Catalog() {
     }
 
     return result
-  }, [products, activeCategories, activeColors, onlyNew, sort])
+  }, [products, activeCategoryIds, activeColors, onlyNew, sort])
 
   return (
     <div className="catalog-page">
@@ -208,13 +206,13 @@ export default function Catalog() {
           <div className="filter-group">
             <p className="filter-group__label">Категорія</p>
             <div className="filter-group__options">
-              {ALL_CATEGORIES.map(cat => (
+              {categories.map(cat => (
                 <button
-                  key={cat}
-                  className={`filter-chip ${activeCategories.includes(cat) ? 'filter-chip--active' : ''}`}
-                  onClick={() => toggleCategory(cat)}
+                  key={cat.id}
+                  className={`filter-chip ${activeCategoryIds.includes(cat.id) ? 'filter-chip--active' : ''}`}
+                  onClick={() => toggleCategory(cat.id)}
                 >
-                  {CATEGORY_LABELS[cat]}
+                  {cat.name}
                 </button>
               ))}
             </div>
@@ -271,16 +269,19 @@ export default function Catalog() {
           {/* Active filter tags */}
           {hasFilters && (
             <div className="catalog-active-filters">
-              {activeCategories.map(cat => (
-                <Tag
-                  key={cat}
-                  closable
-                  onClose={() => toggleCategory(cat)}
-                  className="active-filter-tag"
-                >
-                  {CATEGORY_LABELS[cat]}
-                </Tag>
-              ))}
+              {activeCategoryIds.map(id => {
+                const cat = categories.find(c => c.id === id)
+                return cat ? (
+                  <Tag
+                    key={id}
+                    closable
+                    onClose={() => toggleCategory(id)}
+                    className="active-filter-tag"
+                  >
+                    {cat.name}
+                  </Tag>
+                ) : null
+              })}
               {activeColors.map(color => (
                 <Tag
                   key={color}

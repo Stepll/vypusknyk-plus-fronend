@@ -1,7 +1,10 @@
 export interface ProductResponse {
   id: number
   name: string
-  category: string
+  categoryId: number
+  categoryName: string
+  subcategoryId: number | null
+  subcategoryName: string | null
   color?: string
   price: number
   minOrder: number
@@ -10,6 +13,20 @@ export interface ProductResponse {
   description: string
   tags: string[]
   imageUrl?: string
+}
+
+export interface ProductCategoryResponse {
+  id: number
+  name: string
+  order: number
+  subcategories: ProductSubcategoryResponse[]
+}
+
+export interface ProductSubcategoryResponse {
+  id: number
+  categoryId: number
+  name: string
+  order: number
 }
 
 export interface PagedResponse<T> {
