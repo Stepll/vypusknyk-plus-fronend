@@ -67,6 +67,24 @@ export interface OrderResponse {
   comment?: string
 }
 
+export interface DeliveryCheckoutField {
+  key: string
+  label: string
+  type: 'input' | 'select'
+  required: boolean
+  isEnabled: boolean
+  optionsJson: string
+}
+
+export interface DeliveryMethodResponse {
+  id: number
+  name: string
+  slug: string
+  isEnabled: boolean
+  settings: string
+  checkoutFields: DeliveryCheckoutField[]
+}
+
 export interface DesignResponse {
   id: number
   designName: string

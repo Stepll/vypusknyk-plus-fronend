@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Button, Input } from 'antd'
 import { observer } from 'mobx-react-lite'
@@ -6,37 +6,31 @@ import { useRootStore } from '../../stores/RootStore'
 import { cartItemTotal } from '../../stores/CartStore'
 import { createOrder } from '../../api/orders'
 import { getGuestToken } from '../../api/guest'
+import { getDeliveryMethods } from '../../api/delivery-methods'
+import type { DeliveryMethodResponse, DeliveryCheckoutField } from '../../api/types'
 import './Checkout.css'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Delivery = 'nova-poshta' | 'ukrposhta'
-type Payment  = 'cod' | 'online'
+type Payment = 'cod' | 'online'
 
 interface CheckoutForm {
-  fullName:   string
-  phone:      string
-  email:      string
-  delivery:   Delivery
-  city:       string
-  warehouse:  string
-  postalCode: string
-  payment:    Payment
-  comment:    string
+  fullName:       string
+  phone:          string
+  email:          string
+  deliverySlug:   string
+  deliveryFields: Record<string, string>
+  payment:        Payment
+  comment:        string
 }
 
-type FormErrors = Partial<Record<keyof CheckoutForm, string>>
+type FormErrors = Partial<Record<string, string>>
 
-const INITIAL: CheckoutForm = {
-  fullName:   '',
-  phone:      '+380',
-  email:      '',
-  delivery:   'nova-poshta',
-  city:       '',
-  warehouse:  '',
-  postalCode: '',
-  payment:    'cod',
-  comment:    '',
+const BASE_FORM: Omit<CheckoutForm, 'fullName' | 'phone' | 'email'> = {
+  deliverySlug:   '',
+  deliveryFields: {},
+  payment:        'cod',
+  comment:        '',
 }
 
 // ─── Phone mask ──────────────────────────────────────────────────────────────
@@ -56,17 +50,17 @@ function phoneDigits(formatted: string): string {
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 
-function validate(f: CheckoutForm): FormErrors {
+function validate(
+  form: CheckoutForm,
+  activeFields: DeliveryCheckoutField[],
+): FormErrors {
   const e: FormErrors = {}
-  if (!f.fullName.trim()) e.fullName = "Вкажіть ПІБ"
-  const digits = phoneDigits(f.phone)
-  if (digits.length < 12) e.phone = "Вкажіть повний номер телефону"
-  if (f.delivery === 'nova-poshta') {
-    if (!f.city.trim()) e.city = "Вкажіть місто"
-    if (!f.warehouse.trim()) e.warehouse = "Вкажіть відділення або поштомат"
-  }
-  if (f.delivery === 'ukrposhta') {
-    if (!/^\d{5}$/.test(f.postalCode.trim())) e.postalCode = "Вкажіть 5-значний індекс"
+  if (!form.fullName.trim()) e.fullName = 'Вкажіть ПІБ'
+  if (phoneDigits(form.phone).length < 12) e.phone = 'Вкажіть повний номер телефону'
+  for (const field of activeFields) {
+    if (field.required && !form.deliveryFields[field.key]?.trim()) {
+      e[field.key] = `Вкажіть: ${field.label}`
+    }
   }
   return e
 }
@@ -86,27 +80,50 @@ const Checkout = observer(function Checkout() {
   const { cart, auth, toast } = useRootStore()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState<CheckoutForm>(() => ({
-    ...INITIAL,
+  const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethodResponse[]>([])
+  const [form, setForm] = useState<CheckoutForm>({
+    ...BASE_FORM,
     fullName: auth.user?.fullName ?? '',
-    phone: auth.user?.phone ?? '+380',
-    email: auth.user?.email ?? '',
-  }))
+    phone:    auth.user?.phone ?? '+380',
+    email:    auth.user?.email ?? '',
+  })
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    getDeliveryMethods().then(methods => {
+      setDeliveryMethods(methods)
+      if (methods.length > 0) {
+        setForm(prev => ({ ...prev, deliverySlug: methods[0].slug, deliveryFields: {} }))
+      }
+    }).catch(() => {})
+  }, [])
 
   if (cart.items.length === 0 && !submitted) {
     return <Navigate to="/cart" replace />
   }
 
+  const selectedMethod = deliveryMethods.find(m => m.slug === form.deliverySlug)
+  const activeFields = selectedMethod?.checkoutFields.filter(f => f.isEnabled) ?? []
+
   function set<K extends keyof CheckoutForm>(key: K, value: CheckoutForm[K]) {
     setForm(prev => ({ ...prev, [key]: value }))
+    if (errors[key as string]) setErrors(prev => { const n = { ...prev }; delete n[key as string]; return n })
+  }
+
+  function setDelivery(slug: string) {
+    setForm(prev => ({ ...prev, deliverySlug: slug, deliveryFields: {} }))
+    setErrors({})
+  }
+
+  function setFieldValue(key: string, value: string) {
+    setForm(prev => ({ ...prev, deliveryFields: { ...prev.deliveryFields, [key]: value } }))
     if (errors[key]) setErrors(prev => { const n = { ...prev }; delete n[key]; return n })
   }
 
   async function handleSubmit() {
-    const e = validate(form)
+    const e = validate(form, activeFields)
     setErrors(e)
     if (Object.keys(e).length > 0) return
 
@@ -122,17 +139,17 @@ const Checkout = observer(function Checkout() {
           ribbonCustomization: item.ribbonCustomization,
         })),
         delivery: {
-          method: form.delivery,
-          city: form.delivery === 'nova-poshta' ? form.city : undefined,
-          warehouse: form.delivery === 'nova-poshta' ? form.warehouse : undefined,
-          postalCode: form.delivery === 'ukrposhta' ? form.postalCode : undefined,
+          method:     form.deliverySlug,
+          city:       form.deliveryFields['city'],
+          warehouse:  form.deliveryFields['warehouse'],
+          postalCode: form.deliveryFields['postalCode'],
         },
         recipient: {
           fullName: form.fullName,
           phone: '+' + phoneDigits(form.phone),
         },
         payment: form.payment,
-        email: form.email || undefined,
+        email:   form.email || undefined,
         comment: form.comment || undefined,
         guestToken: auth.isLoggedIn ? undefined : getGuestToken(),
       })
@@ -211,62 +228,32 @@ const Checkout = observer(function Checkout() {
               <h2 className="co-section__title">Доставка</h2>
 
               <div className="co-delivery-options">
-                <button
-                  className={`co-delivery-card ${form.delivery === 'nova-poshta' ? 'co-delivery-card--active' : ''}`}
-                  onClick={() => set('delivery', 'nova-poshta')}
-                >
-                  <span className="co-delivery-card__radio" />
-                  <span className="co-delivery-card__label">Нова Пошта</span>
-                </button>
-                <button
-                  className={`co-delivery-card ${form.delivery === 'ukrposhta' ? 'co-delivery-card--active' : ''}`}
-                  onClick={() => set('delivery', 'ukrposhta')}
-                >
-                  <span className="co-delivery-card__radio" />
-                  <span className="co-delivery-card__label">Укрпошта</span>
-                </button>
+                {deliveryMethods.map(m => (
+                  <button
+                    key={m.slug}
+                    className={`co-delivery-card ${form.deliverySlug === m.slug ? 'co-delivery-card--active' : ''}`}
+                    onClick={() => setDelivery(m.slug)}
+                  >
+                    <span className="co-delivery-card__radio" />
+                    <span className="co-delivery-card__label">{m.name}</span>
+                  </button>
+                ))}
               </div>
 
-              {form.delivery === 'nova-poshta' && (
-                <>
-                  <div className="co-field">
-                    <label className="co-label">Місто *</label>
-                    <Input
-                      value={form.city}
-                      onChange={e => set('city', e.target.value)}
-                      placeholder="Введіть назву міста"
-                      size="large"
-                      status={errors.city ? 'error' : undefined}
-                    />
-                    {errors.city && <span className="co-error">{errors.city}</span>}
-                  </div>
-                  <div className="co-field">
-                    <label className="co-label">Відділення або поштомат *</label>
-                    <Input
-                      value={form.warehouse}
-                      onChange={e => set('warehouse', e.target.value)}
-                      placeholder="Номер відділення або поштомату"
-                      size="large"
-                      status={errors.warehouse ? 'error' : undefined}
-                    />
-                    {errors.warehouse && <span className="co-error">{errors.warehouse}</span>}
-                  </div>
-                </>
-              )}
-
-              {form.delivery === 'ukrposhta' && (
-                <div className="co-field">
-                  <label className="co-label">Поштовий індекс *</label>
+              {activeFields.map(field => (
+                <div key={field.key} className="co-field">
+                  <label className="co-label">
+                    {field.label}{field.required ? ' *' : ''}
+                  </label>
                   <Input
-                    value={form.postalCode}
-                    onChange={e => set('postalCode', e.target.value.replace(/\D/g, '').slice(0, 5))}
-                    placeholder="01001"
+                    value={form.deliveryFields[field.key] ?? ''}
+                    onChange={e => setFieldValue(field.key, e.target.value)}
                     size="large"
-                    status={errors.postalCode ? 'error' : undefined}
+                    status={errors[field.key] ? 'error' : undefined}
                   />
-                  {errors.postalCode && <span className="co-error">{errors.postalCode}</span>}
+                  {errors[field.key] && <span className="co-error">{errors[field.key]}</span>}
                 </div>
-              )}
+              ))}
             </div>
 
             {/* Section 3: Payment */}
