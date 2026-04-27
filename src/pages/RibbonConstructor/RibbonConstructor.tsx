@@ -270,10 +270,10 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                     <span>+{priceSatin} грн</span>
                   </div>
                 )}
-                {priceBlueYellow > 0 && (
+                {priceColor > 0 && (
                   <div className="rc-price-card__row">
-                    <span>Синьо-жовтий колір</span>
-                    <span>+{priceBlueYellow} грн</span>
+                    <span>{apiColors.find(c => c.slug === form.color)?.name ?? 'Колір'}</span>
+                    <span>+{priceColor} грн</span>
                   </div>
                 )}
                 {price3d > 0 && (
