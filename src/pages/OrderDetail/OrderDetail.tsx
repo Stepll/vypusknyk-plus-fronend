@@ -1,37 +1,39 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { getOrder } from '../../api/orders'
-import { OrderResponse } from '../../api/types'
-import { STATUS_LABEL, STATUS_COLOR, STATUS_STEPS, OrderStatus } from '../../constants/mockOrders'
+import { getOrderStatuses } from '../../api/order-statuses'
+import type { OrderResponse, OrderStatusResponse } from '../../api/types'
 import './OrderDetail.css'
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
-function OrderProgress({ status }: { status: string }) {
-  const s = status as OrderStatus
-  const activeIdx = STATUS_STEPS.indexOf(s)
+function OrderProgress({ status, statuses }: { status: string; statuses: OrderStatusResponse[] }) {
+  const current = statuses.find(s => s.name === status)
+  const activeStep = current?.sortOrder ?? 0
+  const color = current?.color ?? '#e5e7eb'
+
   return (
     <div className="od-progress">
-      {STATUS_STEPS.map((step, i) => {
-        const isActive = i <= activeIdx
-        const color = isActive ? STATUS_COLOR[s] : '#e5e7eb'
+      {statuses.map((s, i) => {
+        const isActive = s.sortOrder <= activeStep
+        const dotColor = isActive ? color : '#e5e7eb'
         return (
-          <div key={step} className="od-progress__step">
+          <div key={s.id} className="od-progress__step">
             {i > 0 && (
-              <div className="od-progress__line" style={{ background: color }} />
+              <div className="od-progress__line" style={{ background: dotColor }} />
             )}
             <div className="od-progress__dot-wrap">
               <div
                 className="od-progress__dot"
                 style={isActive
-                  ? { background: color, boxShadow: `0 0 0 3px ${color}33` }
+                  ? { background: dotColor, boxShadow: `0 0 0 3px ${dotColor}33` }
                   : { background: '#e5e7eb' }
                 }
               />
-              <span className="od-progress__label" style={{ color: isActive ? STATUS_COLOR[s] : '#9ca3af' }}>
-                {STATUS_LABEL[step]}
+              <span className="od-progress__label" style={{ color: isActive ? color : '#9ca3af' }}>
+                {s.name}
               </span>
             </div>
           </div>
@@ -45,12 +47,13 @@ export default function OrderDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [order, setOrder] = useState<OrderResponse | null>(null)
+  const [statuses, setStatuses] = useState<OrderStatusResponse[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!id) { navigate('/account', { replace: true }); return }
-    getOrder(id)
-      .then(setOrder)
+    Promise.all([getOrder(id), getOrderStatuses()])
+      .then(([o, s]) => { setOrder(o); setStatuses(s) })
       .catch(() => navigate('/account', { replace: true }))
       .finally(() => setLoading(false))
   }, [id, navigate])
@@ -85,15 +88,15 @@ export default function OrderDetail() {
               <h1 className="od-title">{order.orderNumber}</h1>
               <span className="od-date">{formatDate(order.date)}</span>
             </div>
-            <span className="od-status" style={{ color: STATUS_COLOR[order.status as OrderStatus] ?? '#9ca3af' }}>
-              {STATUS_LABEL[order.status as OrderStatus] ?? order.status}
+            <span className="od-status" style={{ color: statuses.find(s => s.name === order.status)?.color ?? '#9ca3af' }}>
+              {order.status}
             </span>
           </div>
 
           {/* Progress */}
           <div className="od-section">
             <h2 className="od-section__title">Статус замовлення</h2>
-            <OrderProgress status={order.status} />
+            <OrderProgress status={order.status} statuses={statuses} />
           </div>
 
           {/* Items */}

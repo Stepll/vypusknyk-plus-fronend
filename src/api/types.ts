@@ -85,6 +85,15 @@ export interface DeliveryMethodResponse {
   checkoutFields: DeliveryCheckoutField[]
 }
 
+export interface OrderStatusResponse {
+  id: number
+  name: string
+  color: string
+  sortOrder: number
+  isFinal: boolean
+  isActive: boolean
+}
+
 export interface PaymentMethodResponse {
   id: number
   name: string
