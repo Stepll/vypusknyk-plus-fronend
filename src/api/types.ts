@@ -116,6 +116,15 @@ export interface RibbonMaterialResponse {
   sortOrder: number
 }
 
+export interface RibbonPrintTypeResponse {
+  id: number
+  name: string
+  slug: string
+  priceModifier: number
+  isActive: boolean
+  sortOrder: number
+}
+
 export interface RibbonColorResponse {
   id: number
   name: string

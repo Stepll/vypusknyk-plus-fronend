@@ -23,7 +23,8 @@ import { getRibbonColors } from '../../api/ribbon-colors'
 import { getRibbonMaterials } from '../../api/ribbon-materials'
 import { getRibbonPrintColors } from '../../api/ribbon-print-colors'
 import { getRibbonFonts } from '../../api/ribbon-fonts'
-import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse, RibbonFontResponse } from '../../api/types'
+import { getRibbonPrintTypes } from '../../api/ribbon-print-types'
+import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse, RibbonFontResponse, RibbonPrintTypeResponse } from '../../api/types'
 
 const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
   id: i,
@@ -51,6 +52,15 @@ const STATIC_FONTS: RibbonFontResponse[] = FONTS.map((f, i) => ({
   slug: f.value,
   fontFamily: f.fontFamily,
   importUrl: null,
+  isActive: true,
+  sortOrder: i,
+}))
+
+const STATIC_PRINT_TYPES: RibbonPrintTypeResponse[] = PRINT_TYPES.map((p, i) => ({
+  id: i,
+  name: p.label,
+  slug: p.value,
+  priceModifier: 0,
   isActive: true,
   sortOrder: i,
 }))
@@ -137,14 +147,16 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [namesOpen, setNamesOpen]     = useState(false)
   const [namesData, setNamesData]     = useState<NamesData>(EMPTY_NAMES)
   const [manualQty, setManualQty]     = useState(1)
-  const [apiColors, setApiColors]       = useState<RibbonColorResponse[]>(STATIC_COLORS)
-  const [apiMaterials, setApiMaterials]       = useState<RibbonMaterialResponse[]>(STATIC_MATERIALS)
-  const [apiPrintColors, setApiPrintColors]   = useState<RibbonPrintColorResponse[]>(STATIC_PRINT_COLORS)
-  const [apiFonts, setApiFonts]               = useState<RibbonFontResponse[]>(STATIC_FONTS)
+  const [apiColors, setApiColors]           = useState<RibbonColorResponse[]>(STATIC_COLORS)
+  const [apiMaterials, setApiMaterials]     = useState<RibbonMaterialResponse[]>(STATIC_MATERIALS)
+  const [apiPrintTypes, setApiPrintTypes]   = useState<RibbonPrintTypeResponse[]>(STATIC_PRINT_TYPES)
+  const [apiPrintColors, setApiPrintColors] = useState<RibbonPrintColorResponse[]>(STATIC_PRINT_COLORS)
+  const [apiFonts, setApiFonts]             = useState<RibbonFontResponse[]>(STATIC_FONTS)
 
   useEffect(() => {
     getRibbonColors().then(colors => { if (colors.length) setApiColors(colors) }).catch(() => {})
     getRibbonMaterials().then(mats => { if (mats.length) setApiMaterials(mats) }).catch(() => {})
+    getRibbonPrintTypes().then(pts => { if (pts.length) setApiPrintTypes(pts) }).catch(() => {})
     getRibbonPrintColors().then(pcs => { if (pcs.length) setApiPrintColors(pcs) }).catch(() => {})
     getRibbonFonts().then(fts => {
       if (!fts.length) return
@@ -474,17 +486,21 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             <div className="rc-field">
               <label className="rc-label">Тип напису</label>
               <div className="rc-chips">
-                {PRINT_TYPES.map(opt => (
-                  <Chip
-                    key={opt.value}
-                    active={form.printType === opt.value}
-                    disabled={isOptionDisabled(opt, form)}
-                    disabledReason={opt.disabledReason}
-                    onClick={() => update({ printType: opt.value as RibbonState['printType'] })}
-                  >
-                    {opt.label}
-                  </Chip>
-                ))}
+                {apiPrintTypes.map(opt => {
+                  const rule = PRINT_TYPES.find(r => r.value === opt.slug)
+                  const disabled = rule ? isOptionDisabled(rule, form) : false
+                  return (
+                    <Chip
+                      key={opt.slug}
+                      active={form.printType === opt.slug}
+                      disabled={disabled}
+                      disabledReason={rule?.disabledReason}
+                      onClick={() => update({ printType: opt.slug as RibbonState['printType'] })}
+                    >
+                      {opt.name}
+                    </Chip>
+                  )
+                })}
               </div>
             </div>
 
