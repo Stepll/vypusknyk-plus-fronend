@@ -21,7 +21,8 @@ import {
 } from '../../constants/ribbonRules'
 import { getRibbonColors } from '../../api/ribbon-colors'
 import { getRibbonMaterials } from '../../api/ribbon-materials'
-import type { RibbonColorResponse, RibbonMaterialResponse } from '../../api/types'
+import { getRibbonPrintColors } from '../../api/ribbon-print-colors'
+import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse } from '../../api/types'
 
 const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
   id: i,
@@ -38,6 +39,19 @@ const STATIC_MATERIALS: RibbonMaterialResponse[] = MATERIALS.map((m, i) => ({
   id: i,
   name: m.label,
   slug: m.value,
+  priceModifier: 0,
+  isActive: true,
+  sortOrder: i,
+}))
+
+const STATIC_PRINT_COLORS: RibbonPrintColorResponse[] = [
+  ...TEXT_COLORS,
+  ...EXTRA_TEXT_COLORS.filter(c => !TEXT_COLORS.find(t => t.value === c.value)),
+].map((c, i) => ({
+  id: i,
+  name: c.label,
+  slug: c.value,
+  hex: c.hex ?? '#ffffff',
   priceModifier: 0,
   isActive: true,
   sortOrder: i,
@@ -119,11 +133,13 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [namesData, setNamesData]     = useState<NamesData>(EMPTY_NAMES)
   const [manualQty, setManualQty]     = useState(1)
   const [apiColors, setApiColors]       = useState<RibbonColorResponse[]>(STATIC_COLORS)
-  const [apiMaterials, setApiMaterials] = useState<RibbonMaterialResponse[]>(STATIC_MATERIALS)
+  const [apiMaterials, setApiMaterials]       = useState<RibbonMaterialResponse[]>(STATIC_MATERIALS)
+  const [apiPrintColors, setApiPrintColors]   = useState<RibbonPrintColorResponse[]>(STATIC_PRINT_COLORS)
 
   useEffect(() => {
     getRibbonColors().then(colors => { if (colors.length) setApiColors(colors) }).catch(() => {})
     getRibbonMaterials().then(mats => { if (mats.length) setApiMaterials(mats) }).catch(() => {})
+    getRibbonPrintColors().then(pcs => { if (pcs.length) setApiPrintColors(pcs) }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -377,12 +393,12 @@ const RibbonConstructor = observer(function RibbonConstructor() {
               <div className="rc-field">
                 <label className="rc-label">Колір додаткового напису</label>
                 <div className="rc-color-swatches">
-                  {EXTRA_TEXT_COLORS.map(opt => (
-                    <Tooltip key={opt.value} title={opt.label}>
+                  {apiPrintColors.map(opt => (
+                    <Tooltip key={opt.slug} title={opt.name}>
                       <button
-                        className={`rc-color-swatch ${opt.value === 'white' ? '' : ''} ${form.extraTextColor === opt.value ? 'rc-color-swatch--active' : ''}`}
-                        onClick={() => update({ extraTextColor: opt.value as RibbonState['extraTextColor'] })}
-                        aria-label={opt.label}
+                        className={`rc-color-swatch ${form.extraTextColor === opt.slug ? 'rc-color-swatch--active' : ''}`}
+                        onClick={() => update({ extraTextColor: opt.slug as RibbonState['extraTextColor'] })}
+                        aria-label={opt.name}
                       >
                         <span className="rc-color-swatch__dot" style={{ background: opt.hex }} />
                       </button>
@@ -457,15 +473,16 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             <div className="rc-field">
               <label className="rc-label">Колір напису</label>
               <div className="rc-color-swatches">
-                {TEXT_COLORS.map(opt => {
-                  const disabled = isOptionDisabled(opt, form)
+                {apiPrintColors.map(opt => {
+                  const rule = TEXT_COLORS.find(r => r.value === opt.slug)
+                  const disabled = rule ? isOptionDisabled(rule, form) : false
                   return (
-                    <Tooltip key={opt.value} title={disabled ? opt.disabledReason : opt.label}>
+                    <Tooltip key={opt.slug} title={disabled ? rule?.disabledReason : opt.name}>
                       <button
-                        className={`rc-color-swatch ${opt.value === 'white' ? '' : ''} ${form.textColor === opt.value ? 'rc-color-swatch--active' : ''} ${disabled ? 'rc-color-swatch--disabled' : ''}`}
-                        onClick={disabled ? undefined : () => update({ textColor: opt.value as RibbonState['textColor'] })}
+                        className={`rc-color-swatch ${form.textColor === opt.slug ? 'rc-color-swatch--active' : ''} ${disabled ? 'rc-color-swatch--disabled' : ''}`}
+                        onClick={disabled ? undefined : () => update({ textColor: opt.slug as RibbonState['textColor'] })}
                         aria-disabled={disabled}
-                        aria-label={opt.label}
+                        aria-label={opt.name}
                       >
                         <span className="rc-color-swatch__dot" style={{ background: opt.hex }} />
                       </button>

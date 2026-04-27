@@ -85,6 +85,16 @@ export interface DeliveryMethodResponse {
   checkoutFields: DeliveryCheckoutField[]
 }
 
+export interface RibbonPrintColorResponse {
+  id: number
+  name: string
+  slug: string
+  hex: string
+  priceModifier: number
+  isActive: boolean
+  sortOrder: number
+}
+
 export interface RibbonMaterialResponse {
   id: number
   name: string
