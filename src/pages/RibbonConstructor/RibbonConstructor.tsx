@@ -24,7 +24,8 @@ import { getRibbonMaterials } from '../../api/ribbon-materials'
 import { getRibbonPrintColors } from '../../api/ribbon-print-colors'
 import { getRibbonFonts } from '../../api/ribbon-fonts'
 import { getRibbonPrintTypes } from '../../api/ribbon-print-types'
-import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse, RibbonFontResponse, RibbonPrintTypeResponse } from '../../api/types'
+import { getRibbonEmblems } from '../../api/ribbon-emblems'
+import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse, RibbonFontResponse, RibbonPrintTypeResponse, RibbonEmblemResponse } from '../../api/types'
 
 const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
   id: i,
@@ -152,11 +153,13 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [apiPrintTypes, setApiPrintTypes]   = useState<RibbonPrintTypeResponse[]>(STATIC_PRINT_TYPES)
   const [apiPrintColors, setApiPrintColors] = useState<RibbonPrintColorResponse[]>(STATIC_PRINT_COLORS)
   const [apiFonts, setApiFonts]             = useState<RibbonFontResponse[]>(STATIC_FONTS)
+  const [apiEmblems, setApiEmblems]         = useState<RibbonEmblemResponse[]>([])
 
   useEffect(() => {
     getRibbonColors().then(colors => { if (colors.length) setApiColors(colors) }).catch(() => {})
     getRibbonMaterials().then(mats => { if (mats.length) setApiMaterials(mats) }).catch(() => {})
     getRibbonPrintTypes().then(pts => { if (pts.length) setApiPrintTypes(pts) }).catch(() => {})
+    getRibbonEmblems().then(embs => { if (embs.length) setApiEmblems(embs) }).catch(() => {})
     getRibbonPrintColors().then(pcs => { if (pcs.length) setApiPrintColors(pcs) }).catch(() => {})
     getRibbonFonts().then(fts => {
       if (!fts.length) return
@@ -309,6 +312,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                 font={form.font}
                 fontFamily={apiFonts.find(f => f.slug === form.font)?.fontFamily}
                 emblemKey={form.emblemKey}
+                emblems={apiEmblems.map(e => ({ sortOrder: e.sortOrder, svgUrl: e.svgUrl }))}
               />
             </div>
             <div className="rc-price-card">
