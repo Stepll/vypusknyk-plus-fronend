@@ -295,6 +295,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                 textColor={form.textColor}
                 extraTextColor={form.extraTextColor}
                 font={form.font}
+                fontFamily={apiFonts.find(f => f.slug === form.font)?.fontFamily}
                 emblemKey={form.emblemKey}
               />
             </div>

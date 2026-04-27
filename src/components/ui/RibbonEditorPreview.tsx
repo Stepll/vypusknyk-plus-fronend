@@ -114,6 +114,7 @@ export interface RibbonEditorPreviewProps {
   textColor?:      TextColor
   extraTextColor?: ExtraTextColor
   font?:           Font
+  fontFamily?:     string
   emblemKey?:      number
 }
 
@@ -126,6 +127,7 @@ export default function RibbonEditorPreview({
   textColor      = 'white',
   extraTextColor = 'white',
   font           = 'classic',
+  fontFamily:    fontFamilyProp,
   emblemKey      = 0,
 }: RibbonEditorPreviewProps) {
   const uid     = useId().replace(/:/g, '')
@@ -168,7 +170,7 @@ export default function RibbonEditorPreview({
   const shadowHex  = darkenHex(ribbonHex, 18)
   const textHex    = TEXT_HEX[textColor]
   const extraHex   = EXTRA_HEX[extraTextColor]
-  const fontFamily = getFontFamily(font)
+  const fontFamily = fontFamilyProp ?? getFontFamily(font)
 
   const isBlueYellow = color === 'blue-yellow'
   const is3D         = emblemKey === 5
