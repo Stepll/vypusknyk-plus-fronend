@@ -9,6 +9,7 @@ import {
   RibbonState,
   DEFAULT_RIBBON_STATE,
   MAIN_TEXT_3D,
+  RIBBON_COLORS as FALLBACK_COLORS,
   PRINT_TYPES,
   MATERIALS,
   TEXT_COLORS,
@@ -20,6 +21,17 @@ import {
 } from '../../constants/ribbonRules'
 import { getRibbonColors } from '../../api/ribbon-colors'
 import type { RibbonColorResponse } from '../../api/types'
+
+const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
+  id: i,
+  name: c.label,
+  slug: c.value,
+  hex: c.hex,
+  secondaryHex: (c as { flagStyle?: boolean }).flagStyle ? '#FFD700' : null,
+  priceModifier: 0,
+  isActive: true,
+  sortOrder: i,
+}))
 import './RibbonConstructor.css'
 
 // ─── SVG icons for emblems (placeholder until real assets are loaded) ─────────
@@ -96,10 +108,10 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [namesOpen, setNamesOpen]     = useState(false)
   const [namesData, setNamesData]     = useState<NamesData>(EMPTY_NAMES)
   const [manualQty, setManualQty]     = useState(1)
-  const [apiColors, setApiColors]     = useState<RibbonColorResponse[]>([])
+  const [apiColors, setApiColors]     = useState<RibbonColorResponse[]>(STATIC_COLORS)
 
   useEffect(() => {
-    getRibbonColors().then(setApiColors).catch(() => {})
+    getRibbonColors().then(colors => { if (colors.length) setApiColors(colors) }).catch(() => {})
   }, [])
 
   useEffect(() => {
