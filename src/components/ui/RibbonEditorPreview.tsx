@@ -237,14 +237,15 @@ export default function RibbonEditorPreview({
   const emblemSvgRight = emblemEntry?.svgUrlRight ?? null
 
   const isBlueYellow = color === 'blue-yellow'
-  const is3D         = emblemKey === 5
+  const is3D            = emblemKey === 5
+  const hasRightEmblem  = emblemSvgRight !== null || is3D
   const hasName      = Boolean(currentName?.trim())
   const hasClass     = Boolean(classNameProp?.trim())
   const hasSchool    = Boolean(school?.trim())
 
   // ─── Layout ───────────────────────────────────────────────────────────
   const textW = measuredW > 0 ? measuredW : mainText.length * MAIN_FONT * 0.58
-  const contentW = EMB_W + GAP + textW + (is3D ? GAP + EMB_W : 0)
+  const contentW = EMB_W + GAP + textW + (hasRightEmblem ? GAP + EMB_W : 0)
   const vbw = Math.max(BASE_VBW, contentW + SIDE_PAD * 2)
   const contentX = (vbw - contentW) / 2
 
@@ -317,7 +318,7 @@ export default function RibbonEditorPreview({
         </g>
 
         {/* Emblem — right (3D only, mirrored) */}
-        {is3D && (
+        {hasRightEmblem && (
           <g
             transform={`translate(${embRightX + EMB_W}, ${embY}) scale(${-EMB_SCALE}, ${EMB_SCALE})`}
             opacity="0.78"
