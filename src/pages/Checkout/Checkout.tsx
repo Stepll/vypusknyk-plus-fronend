@@ -7,12 +7,11 @@ import { cartItemTotal } from '../../stores/CartStore'
 import { createOrder } from '../../api/orders'
 import { getGuestToken } from '../../api/guest'
 import { getDeliveryMethods } from '../../api/delivery-methods'
-import type { DeliveryMethodResponse, DeliveryCheckoutField } from '../../api/types'
+import { getPaymentMethods } from '../../api/payment-methods'
+import type { DeliveryMethodResponse, DeliveryCheckoutField, PaymentMethodResponse } from '../../api/types'
 import './Checkout.css'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-type Payment = 'cod' | 'online'
 
 interface CheckoutForm {
   fullName:       string
@@ -20,7 +19,7 @@ interface CheckoutForm {
   email:          string
   deliverySlug:   string
   deliveryFields: Record<string, string>
-  payment:        Payment
+  payment:        string
   comment:        string
 }
 
@@ -29,7 +28,7 @@ type FormErrors = Partial<Record<string, string>>
 const BASE_FORM: Omit<CheckoutForm, 'fullName' | 'phone' | 'email'> = {
   deliverySlug:   '',
   deliveryFields: {},
-  payment:        'cod',
+  payment:        '',
   comment:        '',
 }
 
@@ -81,6 +80,7 @@ const Checkout = observer(function Checkout() {
   const navigate = useNavigate()
 
   const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethodResponse[]>([])
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodResponse[]>([])
   const [form, setForm] = useState<CheckoutForm>({
     ...BASE_FORM,
     fullName: auth.user?.fullName ?? '',
@@ -97,6 +97,12 @@ const Checkout = observer(function Checkout() {
       if (methods.length > 0) {
         setForm(prev => ({ ...prev, deliverySlug: methods[0].slug, deliveryFields: {} }))
       }
+    }).catch(() => {})
+
+    getPaymentMethods().then(methods => {
+      setPaymentMethods(methods)
+      const first = methods.find(m => m.isEnabled)
+      if (first) setForm(prev => ({ ...prev, payment: first.slug }))
     }).catch(() => {})
   }, [])
 
@@ -260,23 +266,26 @@ const Checkout = observer(function Checkout() {
             <div className="co-section">
               <h2 className="co-section__title">Оплата</h2>
               <div className="co-delivery-options">
-                <button
-                  className={`co-delivery-card ${form.payment === 'cod' ? 'co-delivery-card--active' : ''}`}
-                  onClick={() => set('payment', 'cod')}
-                >
-                  <span className="co-delivery-card__radio" />
-                  <span className="co-delivery-card__label">Оплата при отриманні</span>
-                </button>
-                <button
-                  className="co-delivery-card co-delivery-card--disabled"
-                  disabled
-                >
-                  <span className="co-delivery-card__radio" />
-                  <div>
-                    <span className="co-delivery-card__label">Онлайн оплата</span>
-                    <span className="co-delivery-card__badge">Незабаром</span>
-                  </div>
-                </button>
+                {paymentMethods.map(m => (
+                  m.isEnabled ? (
+                    <button
+                      key={m.slug}
+                      className={`co-delivery-card ${form.payment === m.slug ? 'co-delivery-card--active' : ''}`}
+                      onClick={() => set('payment', m.slug)}
+                    >
+                      <span className="co-delivery-card__radio" />
+                      <span className="co-delivery-card__label">{m.name}</span>
+                    </button>
+                  ) : (
+                    <button key={m.slug} className="co-delivery-card co-delivery-card--disabled" disabled>
+                      <span className="co-delivery-card__radio" />
+                      <div>
+                        <span className="co-delivery-card__label">{m.name}</span>
+                        <span className="co-delivery-card__badge">Незабаром</span>
+                      </div>
+                    </button>
+                  )
+                ))}
               </div>
             </div>
 

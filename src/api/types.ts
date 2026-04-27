@@ -85,6 +85,13 @@ export interface DeliveryMethodResponse {
   checkoutFields: DeliveryCheckoutField[]
 }
 
+export interface PaymentMethodResponse {
+  id: number
+  name: string
+  slug: string
+  isEnabled: boolean
+}
+
 export interface DesignResponse {
   id: number
   designName: string
