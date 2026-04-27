@@ -20,7 +20,8 @@ import {
   sanitizeRibbonState,
 } from '../../constants/ribbonRules'
 import { getRibbonColors } from '../../api/ribbon-colors'
-import type { RibbonColorResponse } from '../../api/types'
+import { getRibbonMaterials } from '../../api/ribbon-materials'
+import type { RibbonColorResponse, RibbonMaterialResponse } from '../../api/types'
 
 const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
   id: i,
@@ -28,6 +29,15 @@ const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
   slug: c.value,
   hex: c.hex,
   secondaryHex: (c as { flagStyle?: boolean }).flagStyle ? '#FFD700' : null,
+  priceModifier: 0,
+  isActive: true,
+  sortOrder: i,
+}))
+
+const STATIC_MATERIALS: RibbonMaterialResponse[] = MATERIALS.map((m, i) => ({
+  id: i,
+  name: m.label,
+  slug: m.value,
   priceModifier: 0,
   isActive: true,
   sortOrder: i,
@@ -108,10 +118,12 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [namesOpen, setNamesOpen]     = useState(false)
   const [namesData, setNamesData]     = useState<NamesData>(EMPTY_NAMES)
   const [manualQty, setManualQty]     = useState(1)
-  const [apiColors, setApiColors]     = useState<RibbonColorResponse[]>(STATIC_COLORS)
+  const [apiColors, setApiColors]       = useState<RibbonColorResponse[]>(STATIC_COLORS)
+  const [apiMaterials, setApiMaterials] = useState<RibbonMaterialResponse[]>(STATIC_MATERIALS)
 
   useEffect(() => {
     getRibbonColors().then(colors => { if (colors.length) setApiColors(colors) }).catch(() => {})
+    getRibbonMaterials().then(mats => { if (mats.length) setApiMaterials(mats) }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -136,7 +148,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const hasSecondaryText = Boolean(form.school.trim()) || Boolean(firstClass) || namedCount > 0
   const priceBase = 50
   const priceSecondary = hasSecondaryText ? 20 : 0
-  const priceSatin = form.material === 'satin' ? 30 : 0
+  const priceSatin = apiMaterials.find(m => m.slug === form.material)?.priceModifier ?? 0
   const priceColor = apiColors.find(c => c.slug === form.color)?.priceModifier ?? 0
   const price3d = form.printType === '3d' ? 20 : 0
   const pricePerUnit = priceBase + priceSecondary + priceSatin + priceColor + price3d
@@ -266,7 +278,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                 )}
                 {priceSatin > 0 && (
                   <div className="rc-price-card__row">
-                    <span>Сатин</span>
+                    <span>{apiMaterials.find(m => m.slug === form.material)?.name ?? 'Матеріал'}</span>
                     <span>+{priceSatin} грн</span>
                   </div>
                 )}
@@ -384,17 +396,21 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             <div className="rc-field">
               <label className="rc-label">Матеріал</label>
               <div className="rc-chips">
-                {MATERIALS.map(opt => (
-                  <Chip
-                    key={opt.value}
-                    active={form.material === opt.value}
-                    disabled={isOptionDisabled(opt, form)}
-                    disabledReason={opt.disabledReason}
-                    onClick={() => update({ material: opt.value as RibbonState['material'] })}
-                  >
-                    {opt.label}
-                  </Chip>
-                ))}
+                {apiMaterials.map(m => {
+                  const rule = MATERIALS.find(r => r.value === m.slug)
+                  const disabled = rule ? isOptionDisabled(rule, form) : false
+                  return (
+                    <Chip
+                      key={m.slug}
+                      active={form.material === m.slug}
+                      disabled={disabled}
+                      disabledReason={rule?.disabledReason}
+                      onClick={() => update({ material: m.slug as RibbonState['material'] })}
+                    >
+                      {m.name}
+                    </Chip>
+                  )
+                })}
               </div>
             </div>
 
