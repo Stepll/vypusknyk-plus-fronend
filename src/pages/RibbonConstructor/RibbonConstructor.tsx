@@ -45,17 +45,11 @@ const STATIC_MATERIALS: RibbonMaterialResponse[] = MATERIALS.map((m, i) => ({
 }))
 
 const STATIC_PRINT_COLORS: RibbonPrintColorResponse[] = [
-  ...TEXT_COLORS,
-  ...EXTRA_TEXT_COLORS.filter(c => !TEXT_COLORS.find(t => t.value === c.value)),
-].map((c, i) => ({
-  id: i,
-  name: c.label,
-  slug: c.value,
-  hex: c.hex ?? '#ffffff',
-  priceModifier: 0,
-  isActive: true,
-  sortOrder: i,
-}))
+  { id: 0, name: 'Білий',   slug: 'white',  hex: '#e8e8e8', priceModifier: 0, isForMainText: true,  isForExtraText: true,  isActive: true, sortOrder: 0 },
+  { id: 1, name: 'Чорний',  slug: 'black',  hex: '#1a1a2e', priceModifier: 0, isForMainText: true,  isForExtraText: false, isActive: true, sortOrder: 1 },
+  { id: 2, name: 'Золотий', slug: 'gold',   hex: '#c9a84c', priceModifier: 0, isForMainText: true,  isForExtraText: false, isActive: true, sortOrder: 2 },
+  { id: 3, name: 'Жовтий',  slug: 'yellow', hex: '#FFD700', priceModifier: 0, isForMainText: false, isForExtraText: true,  isActive: true, sortOrder: 3 },
+]
 import './RibbonConstructor.css'
 
 // ─── SVG icons for emblems (placeholder until real assets are loaded) ─────────
@@ -393,7 +387,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
               <div className="rc-field">
                 <label className="rc-label">Колір додаткового напису</label>
                 <div className="rc-color-swatches">
-                  {apiPrintColors.map(opt => (
+                  {apiPrintColors.filter(c => c.isForExtraText).map(opt => (
                     <Tooltip key={opt.slug} title={opt.name}>
                       <button
                         className={`rc-color-swatch ${form.extraTextColor === opt.slug ? 'rc-color-swatch--active' : ''}`}
@@ -473,7 +467,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             <div className="rc-field">
               <label className="rc-label">Колір напису</label>
               <div className="rc-color-swatches">
-                {apiPrintColors.map(opt => {
+                {apiPrintColors.filter(c => c.isForMainText).map(opt => {
                   const rule = TEXT_COLORS.find(r => r.value === opt.slug)
                   const disabled = rule ? isOptionDisabled(rule, form) : false
                   return (

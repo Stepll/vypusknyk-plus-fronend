@@ -91,6 +91,8 @@ export interface RibbonPrintColorResponse {
   slug: string
   hex: string
   priceModifier: number
+  isForMainText: boolean
+  isForExtraText: boolean
   isActive: boolean
   sortOrder: number
 }
