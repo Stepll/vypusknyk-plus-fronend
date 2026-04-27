@@ -9,7 +9,6 @@ import {
   RibbonState,
   DEFAULT_RIBBON_STATE,
   MAIN_TEXT_3D,
-  RIBBON_COLORS,
   PRINT_TYPES,
   MATERIALS,
   TEXT_COLORS,
@@ -19,6 +18,8 @@ import {
   isOptionDisabled,
   sanitizeRibbonState,
 } from '../../constants/ribbonRules'
+import { getRibbonColors } from '../../api/ribbon-colors'
+import type { RibbonColorResponse } from '../../api/types'
 import './RibbonConstructor.css'
 
 // ─── SVG icons for emblems (placeholder until real assets are loaded) ─────────
@@ -68,7 +69,7 @@ function Chip({ active, disabled, disabledReason, onClick, children, className =
 
 // ─── Color swatch ─────────────────────────────────────────────────────────────
 
-function FlagSwatch() {
+function FlagSwatch({ hex, secondaryHex }: { hex: string; secondaryHex: string }) {
   return (
     <svg viewBox="0 0 36 36" style={{ width: 36, height: 36, display: 'block' }}>
       <defs>
@@ -77,8 +78,8 @@ function FlagSwatch() {
         </clipPath>
       </defs>
       <g clipPath="url(#flag-circle-clip)">
-        <rect x="0" y="0" width="36" height="18" fill="#005BBB" />
-        <rect x="0" y="18" width="36" height="18" fill="#FFD500" />
+        <rect x="0" y="0" width="36" height="18" fill={hex} />
+        <rect x="0" y="18" width="36" height="18" fill={secondaryHex} />
       </g>
     </svg>
   )
@@ -95,6 +96,11 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [namesOpen, setNamesOpen]     = useState(false)
   const [namesData, setNamesData]     = useState<NamesData>(EMPTY_NAMES)
   const [manualQty, setManualQty]     = useState(1)
+  const [apiColors, setApiColors]     = useState<RibbonColorResponse[]>([])
+
+  useEffect(() => {
+    getRibbonColors().then(setApiColors).catch(() => {})
+  }, [])
 
   useEffect(() => {
     const pending = auth.consumePendingDesign()
@@ -119,9 +125,9 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const priceBase = 50
   const priceSecondary = hasSecondaryText ? 20 : 0
   const priceSatin = form.material === 'satin' ? 30 : 0
-  const priceBlueYellow = form.color === 'blue-yellow' ? 10 : 0
+  const priceColor = apiColors.find(c => c.slug === form.color)?.priceModifier ?? 0
   const price3d = form.printType === '3d' ? 20 : 0
-  const pricePerUnit = priceBase + priceSecondary + priceSatin + priceBlueYellow + price3d
+  const pricePerUnit = priceBase + priceSecondary + priceSatin + priceColor + price3d
   const minQty = Math.max(namedCount, 1)
   const qty = Math.max(manualQty, minQty)
   const total = pricePerUnit * qty
@@ -384,15 +390,15 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             <div className="rc-field">
               <label className="rc-label">Колір стрічки</label>
               <div className="rc-color-swatches">
-                {RIBBON_COLORS.map(c => (
-                  <Tooltip key={c.value} title={c.label}>
+                {apiColors.map(c => (
+                  <Tooltip key={c.slug} title={c.name}>
                     <button
-                      className={`rc-color-swatch ${form.color === c.value ? 'rc-color-swatch--active' : ''}`}
-                      onClick={() => update({ color: c.value as RibbonState['color'] })}
-                      aria-label={c.label}
+                      className={`rc-color-swatch ${form.color === c.slug ? 'rc-color-swatch--active' : ''}`}
+                      onClick={() => update({ color: c.slug as RibbonState['color'] })}
+                      aria-label={c.name}
                     >
-                      {c.flagStyle
-                        ? <FlagSwatch />
+                      {c.secondaryHex
+                        ? <FlagSwatch hex={c.hex} secondaryHex={c.secondaryHex} />
                         : <span className="rc-color-swatch__dot" style={{ background: c.hex }} />
                       }
                     </button>
