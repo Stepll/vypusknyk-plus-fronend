@@ -22,7 +22,8 @@ import {
 import { getRibbonColors } from '../../api/ribbon-colors'
 import { getRibbonMaterials } from '../../api/ribbon-materials'
 import { getRibbonPrintColors } from '../../api/ribbon-print-colors'
-import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse } from '../../api/types'
+import { getRibbonFonts } from '../../api/ribbon-fonts'
+import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse, RibbonFontResponse } from '../../api/types'
 
 const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
   id: i,
@@ -40,6 +41,16 @@ const STATIC_MATERIALS: RibbonMaterialResponse[] = MATERIALS.map((m, i) => ({
   name: m.label,
   slug: m.value,
   priceModifier: 0,
+  isActive: true,
+  sortOrder: i,
+}))
+
+const STATIC_FONTS: RibbonFontResponse[] = FONTS.map((f, i) => ({
+  id: i,
+  name: f.label,
+  slug: f.value,
+  fontFamily: f.fontFamily,
+  importUrl: null,
   isActive: true,
   sortOrder: i,
 }))
@@ -129,11 +140,24 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [apiColors, setApiColors]       = useState<RibbonColorResponse[]>(STATIC_COLORS)
   const [apiMaterials, setApiMaterials]       = useState<RibbonMaterialResponse[]>(STATIC_MATERIALS)
   const [apiPrintColors, setApiPrintColors]   = useState<RibbonPrintColorResponse[]>(STATIC_PRINT_COLORS)
+  const [apiFonts, setApiFonts]               = useState<RibbonFontResponse[]>(STATIC_FONTS)
 
   useEffect(() => {
     getRibbonColors().then(colors => { if (colors.length) setApiColors(colors) }).catch(() => {})
     getRibbonMaterials().then(mats => { if (mats.length) setApiMaterials(mats) }).catch(() => {})
     getRibbonPrintColors().then(pcs => { if (pcs.length) setApiPrintColors(pcs) }).catch(() => {})
+    getRibbonFonts().then(fts => {
+      if (!fts.length) return
+      fts.forEach(f => {
+        if (f.importUrl && !document.querySelector(`link[href="${f.importUrl}"]`)) {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = f.importUrl
+          document.head.appendChild(link)
+        }
+      })
+      setApiFonts(fts)
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -512,18 +536,19 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             <div className="rc-field">
               <label className="rc-label">Шрифт</label>
               <div className="rc-font-swatches">
-                {FONTS.map(f => {
-                  const disabled = isOptionDisabled(f, form)
+                {apiFonts.map(f => {
+                  const rule = FONTS.find(r => r.value === f.slug)
+                  const disabled = rule ? isOptionDisabled(rule, form) : false
                   return (
-                    <Tooltip key={f.value} title={disabled ? f.disabledReason : undefined}>
+                    <Tooltip key={f.slug} title={disabled ? rule?.disabledReason : undefined}>
                       <button
-                        className={`rc-font-swatch ${form.font === f.value ? 'rc-font-swatch--active' : ''} ${disabled ? 'rc-font-swatch--disabled' : ''}`}
-                        onClick={disabled ? undefined : () => update({ font: f.value as RibbonState['font'] })}
+                        className={`rc-font-swatch ${form.font === f.slug ? 'rc-font-swatch--active' : ''} ${disabled ? 'rc-font-swatch--disabled' : ''}`}
+                        onClick={disabled ? undefined : () => update({ font: f.slug as RibbonState['font'] })}
                         aria-disabled={disabled}
                         style={{ fontFamily: f.fontFamily }}
                       >
                         <span className="rc-font-swatch__preview">Аб</span>
-                        <span className="rc-font-swatch__label">{f.label}</span>
+                        <span className="rc-font-swatch__label">{f.name}</span>
                       </button>
                     </Tooltip>
                   )
