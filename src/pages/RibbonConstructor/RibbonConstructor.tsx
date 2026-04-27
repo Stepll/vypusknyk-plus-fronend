@@ -312,7 +312,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                 font={form.font}
                 fontFamily={apiFonts.find(f => f.slug === form.font)?.fontFamily}
                 emblemKey={form.emblemKey}
-                emblems={apiEmblems.map(e => ({ sortOrder: e.sortOrder, svgUrl: e.svgUrl }))}
+                emblems={apiEmblems.map(e => ({ sortOrder: e.sortOrder, svgUrlLeft: e.svgUrlLeft, svgUrlRight: e.svgUrlRight }))}
               />
             </div>
             <div className="rc-price-card">

@@ -120,7 +120,8 @@ export interface RibbonEmblemResponse {
   id: number
   name: string
   slug: string
-  svgUrl: string | null
+  svgUrlLeft: string | null
+  svgUrlRight: string | null
   isActive: boolean
   sortOrder: number
 }
