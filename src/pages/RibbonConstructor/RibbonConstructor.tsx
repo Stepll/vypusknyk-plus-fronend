@@ -13,7 +13,6 @@ import {
   MATERIALS,
   EXTRA_TEXT_COLORS,
   FONTS,
-  sanitizeRibbonState,
 } from '../../constants/ribbonRules'
 import { getRibbonColors } from '../../api/ribbon-colors'
 import { getRibbonMaterials } from '../../api/ribbon-materials'
@@ -104,8 +103,7 @@ function Chip({ active, disabled, disabledReason, onClick, children, className =
   const btn = (
     <button
       className={`rc-chip ${active ? 'rc-chip--active' : ''} ${disabled ? 'rc-chip--disabled' : ''} ${className}`}
-      onClick={disabled ? undefined : onClick}
-      aria-disabled={disabled}
+      onClick={onClick}
     >
       {children}
     </button>
@@ -216,6 +214,33 @@ const RibbonConstructor = observer(function RibbonConstructor() {
     }
   }
 
+  function getOptionsForType(type: string): string[] {
+    switch (type) {
+      case 'printType': return apiPrintTypes.map(x => x.slug)
+      case 'material':  return apiMaterials.map(x => x.slug)
+      case 'font':      return apiFonts.map(x => x.slug)
+      case 'textColor': return apiPrintColors.filter(c => c.isForMainText).map(x => x.slug)
+      case 'color':     return apiColors.map(x => x.slug)
+      case 'emblem':    return apiEmblems.map(x => x.slug)
+      default:          return []
+    }
+  }
+
+  function applyField(state: RibbonState, type: string, slug: string): RibbonState {
+    switch (type) {
+      case 'printType': return { ...state, printType: slug as RibbonState['printType'] }
+      case 'material':  return { ...state, material: slug as RibbonState['material'] }
+      case 'font':      return { ...state, font: slug as RibbonState['font'] }
+      case 'textColor': return { ...state, textColor: slug as RibbonState['textColor'] }
+      case 'color':     return { ...state, color: slug as RibbonState['color'] }
+      case 'emblem': {
+        const e = apiEmblems.find(em => em.slug === slug)
+        return e ? { ...state, emblemKey: e.sortOrder } : state
+      }
+      default: return state
+    }
+  }
+
   function getOptionStatus(type: string, slug: string): { disabled: boolean; warning: boolean; message: string | null } {
     for (const rule of rules.incompatibilities) {
       let matched = false
@@ -232,18 +257,43 @@ const RibbonConstructor = observer(function RibbonConstructor() {
     return { disabled: false, warning: false, message: null }
   }
 
-  function update(patch: Partial<RibbonState>) {
-    setForm(prev => {
-      const next = sanitizeRibbonState({ ...prev, ...patch })
-      // Sanitize forced text fields if a rule now applies
-      const ftRule = rules.forcedTexts.find(r =>
-        r.targetField === 'mainText' && getFieldValue(next, r.triggerType) === r.triggerSlug
-      )
-      if (ftRule && ftRule.values.length > 0 && !ftRule.values.includes(next.mainText)) {
-        return { ...next, mainText: ftRule.values[0] }
+  function applyForcedTexts(state: RibbonState): RibbonState {
+    const ftRule = rules.forcedTexts.find(r =>
+      r.targetField === 'mainText' && getFieldValue(state, r.triggerType) === r.triggerSlug
+    )
+    if (ftRule && ftRule.values.length > 0 && !ftRule.values.includes(state.mainText)) {
+      return { ...state, mainText: ftRule.values[0] }
+    }
+    return state
+  }
+
+  function resolveConflicts(state: RibbonState, changedType: string): RibbonState {
+    let next = { ...state }
+    for (const rule of rules.incompatibilities) {
+      if (rule.isWarning) continue
+      const valA = getFieldValue(next, rule.typeA)
+      const valB = getFieldValue(next, rule.typeB)
+      if (valA === rule.slugA && valB !== null && rule.slugsB.includes(valB)) {
+        if (rule.typeA === changedType) {
+          // User chose slugA → reset typeB to first non-conflicting option
+          const fallback = getOptionsForType(rule.typeB).find(s => !rule.slugsB.includes(s))
+          if (fallback) next = applyField(next, rule.typeB, fallback)
+        } else {
+          // User chose a value in slugsB → reset typeA to first different option
+          const fallback = getOptionsForType(rule.typeA).find(s => s !== rule.slugA)
+          if (fallback) next = applyField(next, rule.typeA, fallback)
+        }
       }
-      return next
-    })
+    }
+    return next
+  }
+
+  function update(patch: Partial<RibbonState>) {
+    setForm(prev => applyForcedTexts({ ...prev, ...patch }))
+  }
+
+  function forceSelect(type: string, slug: string) {
+    setForm(prev => applyForcedTexts(resolveConflicts(applyField({ ...prev }, type, slug), type)))
   }
 
   function handleSave() {
@@ -509,7 +559,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                       active={form.material === m.slug}
                       disabled={status.disabled}
                       disabledReason={status.message ?? undefined}
-                      onClick={() => update({ material: m.slug as RibbonState['material'] })}
+                      onClick={() => status.disabled ? forceSelect('material', m.slug) : update({ material: m.slug as RibbonState['material'] })}
                     >
                       {m.name}
                     </Chip>
@@ -551,7 +601,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                       active={form.printType === opt.slug}
                       disabled={status.disabled}
                       disabledReason={status.message ?? undefined}
-                      onClick={() => update({ printType: opt.slug as RibbonState['printType'] })}
+                      onClick={() => status.disabled ? forceSelect('printType', opt.slug) : update({ printType: opt.slug as RibbonState['printType'] })}
                     >
                       {opt.name}
                     </Chip>
@@ -570,8 +620,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                     <Tooltip key={opt.slug} title={status.disabled ? (status.message ?? 'Недоступно') : opt.name}>
                       <button
                         className={`rc-color-swatch ${form.textColor === opt.slug ? 'rc-color-swatch--active' : ''} ${status.disabled ? 'rc-color-swatch--disabled' : ''}`}
-                        onClick={status.disabled ? undefined : () => update({ textColor: opt.slug as RibbonState['textColor'] })}
-                        aria-disabled={status.disabled}
+                        onClick={() => status.disabled ? forceSelect('textColor', opt.slug) : update({ textColor: opt.slug as RibbonState['textColor'] })}
                         aria-label={opt.name}
                       >
                         <span className="rc-color-swatch__dot" style={{ background: opt.hex }} />
@@ -592,8 +641,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                     <Tooltip key={e.sortOrder} title={status.disabled ? (status.message ?? 'Недоступно') : e.name}>
                       <button
                         className={`rc-emblem-swatch ${form.emblemKey === e.sortOrder ? 'rc-emblem-swatch--active' : ''} ${status.disabled ? 'rc-emblem-swatch--disabled' : ''}`}
-                        onClick={status.disabled ? undefined : () => update({ emblemKey: e.sortOrder })}
-                        aria-disabled={status.disabled}
+                        onClick={() => status.disabled ? forceSelect('emblem', e.slug) : update({ emblemKey: e.sortOrder })}
                         aria-label={e.name}
                       >
                         <EmblemSvg emblemKey={e.sortOrder} />
@@ -614,8 +662,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                     <Tooltip key={f.slug} title={status.disabled ? (status.message ?? 'Недоступно') : undefined}>
                       <button
                         className={`rc-font-swatch ${form.font === f.slug ? 'rc-font-swatch--active' : ''} ${status.disabled ? 'rc-font-swatch--disabled' : ''}`}
-                        onClick={status.disabled ? undefined : () => update({ font: f.slug as RibbonState['font'] })}
-                        aria-disabled={status.disabled}
+                        onClick={() => status.disabled ? forceSelect('font', f.slug) : update({ font: f.slug as RibbonState['font'] })}
                         style={{ fontFamily: f.fontFamily }}
                       >
                         <span className="rc-font-swatch__preview">Аб</span>
