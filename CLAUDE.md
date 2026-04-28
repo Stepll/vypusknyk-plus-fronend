@@ -150,13 +150,18 @@ src/
     orders.ts       # createOrder, getUserOrders, getOrder
     products.ts     # getProducts, getProduct
     categories.ts   # getProductCategories() → GET /api/v1/product-categories (ProductCategoryResponse[])
-    designs.ts      # fetchDesigns, createDesign, updateDesign, deleteDesign
-    types.ts        # Shared API types
+    designs.ts             # fetchDesigns, createDesign, updateDesign, deleteDesign
+    ribbon-print-types.ts  # getRibbonPrintTypes() → GET /api/v1/ribbon-print-types
+    ribbon-emblems.ts      # getRibbonEmblems() → GET /api/v1/ribbon-emblems
+    constructor-rules.ts   # getConstructorRules() → GET /api/v1/constructor/rules → ConstructorRulesResponse
+    types.ts               # Shared API types (RibbonPrintTypeResponse, RibbonEmblemResponse з svgUrlLeft/svgUrlRight,
+                           # ConstructorIncompatibilityResponse, ConstructorForcedTextResponse, ConstructorRulesResponse)
 
   constants/
     nav.ts
     products.ts     # Мок-дані (замінені реальним API)
-    ribbonRules.ts  # RibbonState, типи конструктора
+    ribbonRules.ts  # RibbonState, типи конструктора; PRINT_TYPES/MATERIALS/FONTS — статичні fallback значення
+                    # НЕ містить disabled/isOptionDisabled логіки — правила беруться з API (constructor-rules)
 
   hooks/
     useScrollAnimation.ts
@@ -187,6 +192,34 @@ src/
 - Всі виклики через `src/api/` — ніколи напряму в компонентах
 - `client.ts` auto-refresh при 401; при невдачі — `auth:session-expired` → AuthStore скидає стан
 - Гостьові сесії: `guestToken` UUID генерується в `api/guest.ts`, зберігається в localStorage
+
+---
+
+## Конструктор стрічок (RibbonConstructor)
+
+**Паттерн статичного fallback**: UI стан ініціалізується зі статичних констант (`PRINT_TYPES`, `COLORS` і т.д. з `ribbonRules.ts`), замінюється реальними даними API після завантаження.
+
+**API стани конструктора:**
+- `apiFonts` — завантажуються з `/api/v1/ribbon-fonts`; `fontFamily` передається напряму до превью
+- `apiPrintTypes` — завантажуються з `/api/v1/ribbon-print-types`
+- `apiEmblems` — завантажуються з `/api/v1/ribbon-emblems`; mapуються до `EmblemEntry[]` для превью
+- `rules` — завантажуються з `/api/v1/constructor/rules` → `ConstructorRulesResponse`
+
+**Система динамічних правил** (замінила хардкодовані `disabled` функції):
+- `getFieldValue(state, type)` — маппінг типу поля до значення стану; emblem: `sortOrder → slug` через `apiEmblems`
+- `getOptionStatus(type, slug)` — перевіряє несумісності в обидва боки; повертає `{ disabled, warning, message }`
+- `forceSelect(type, slug)` — примусово вмикає опцію і вирішує конфлікти: `applyField → resolveConflicts → applyForcedTexts`
+- `resolveConflicts(state, changedType)` — для кожного конфлікту скидає інше поле на перший не-конфліктний варіант
+- `applyForcedTexts(state)` — якщо правило forcedText застосовується до `mainText`, скидає до першого дозволеного значення
+- **emblemKey = sortOrder**: ідентифікатор емблеми в стані — `sortOrder` (число), slug використовується тільки для порівняння з правилами
+- **Force-select UX**: клік на задізейблену кнопку вмикає її і автоматично перемикає конфліктні поля; `mainText` може стати `<Select>` якщо діє forcedText-правило
+
+**RibbonEditorPreview** (`src/components/ui/RibbonEditorPreview.tsx`):
+- `fontFamily?: string` — передається напряму (пріоритет над `getFontFamily(font)` lookup)
+- `emblems?: EmblemEntry[]` — масив `{ sortOrder, svgUrlLeft, svgUrlRight }`
+- `EmblemFromUrl` — компонент що завантажує SVG через `fetch`, кешує в `_svgCache`, інжектує через `ref.current.innerHTML` (обхід обмеження React на `dangerouslySetInnerHTML` в SVG)
+- Auto-scaling: парсить `viewBox` → `scale = min(48/vbW, 52/vbH)` → центрує через `translate(tx, ty) scale(scale)`
+- `hasRightEmblem = emblemSvgRight !== null || is3D` — умова відображення правої емблеми і розрахунку ширини
 
 ---
 
