@@ -13,6 +13,7 @@ import ProductPage from './pages/ProductPage/ProductPage'
 import Cart from './pages/Cart/Cart'
 import CartFloat from './components/cart/CartFloat'
 import CartToast from './components/ui/CartToast'
+import ChatWidget from './components/chat/ChatWidget'
 import ConstructorHub from './pages/ConstructorHub/ConstructorHub'
 import RibbonConstructor from './pages/RibbonConstructor/RibbonConstructor'
 import Checkout from './pages/Checkout/Checkout'
@@ -44,6 +45,7 @@ function App() {
           <Navbar />
           <CartFloat />
           <CartToast />
+          <ChatWidget />
           <main>
             <Routes>
               <Route path="/" element={<Home />} />
