@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, Input, Tooltip } from 'antd'
+import { Button, Input, Tooltip, Select } from 'antd'
 import { observer } from 'mobx-react-lite'
 import NamesDrawer, { NamesData, countNames } from '../../components/ui/NamesDrawer'
 import { useRootStore } from '../../stores/RootStore'
@@ -8,15 +8,11 @@ import RibbonEditorPreview from '../../components/ui/RibbonEditorPreview'
 import {
   RibbonState,
   DEFAULT_RIBBON_STATE,
-  MAIN_TEXT_3D,
   RIBBON_COLORS as FALLBACK_COLORS,
   PRINT_TYPES,
   MATERIALS,
-  TEXT_COLORS,
   EXTRA_TEXT_COLORS,
   FONTS,
-  EMBLEMS,
-  isOptionDisabled,
   sanitizeRibbonState,
 } from '../../constants/ribbonRules'
 import { getRibbonColors } from '../../api/ribbon-colors'
@@ -25,7 +21,8 @@ import { getRibbonPrintColors } from '../../api/ribbon-print-colors'
 import { getRibbonFonts } from '../../api/ribbon-fonts'
 import { getRibbonPrintTypes } from '../../api/ribbon-print-types'
 import { getRibbonEmblems } from '../../api/ribbon-emblems'
-import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse, RibbonFontResponse, RibbonPrintTypeResponse, RibbonEmblemResponse } from '../../api/types'
+import { getConstructorRules } from '../../api/constructor-rules'
+import type { RibbonColorResponse, RibbonMaterialResponse, RibbonPrintColorResponse, RibbonFontResponse, RibbonPrintTypeResponse, RibbonEmblemResponse, ConstructorRulesResponse } from '../../api/types'
 
 const STATIC_COLORS: RibbonColorResponse[] = FALLBACK_COLORS.map((c, i) => ({
   id: i,
@@ -154,12 +151,14 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const [apiPrintColors, setApiPrintColors] = useState<RibbonPrintColorResponse[]>(STATIC_PRINT_COLORS)
   const [apiFonts, setApiFonts]             = useState<RibbonFontResponse[]>(STATIC_FONTS)
   const [apiEmblems, setApiEmblems]         = useState<RibbonEmblemResponse[]>([])
+  const [rules, setRules]                   = useState<ConstructorRulesResponse>({ incompatibilities: [], forcedTexts: [] })
 
   useEffect(() => {
     getRibbonColors().then(colors => { if (colors.length) setApiColors(colors) }).catch(() => {})
     getRibbonMaterials().then(mats => { if (mats.length) setApiMaterials(mats) }).catch(() => {})
     getRibbonPrintTypes().then(pts => { if (pts.length) setApiPrintTypes(pts) }).catch(() => {})
     getRibbonEmblems().then(embs => { if (embs.length) setApiEmblems(embs) }).catch(() => {})
+    getConstructorRules().then(r => setRules(r)).catch(() => {})
     getRibbonPrintColors().then(pcs => { if (pcs.length) setApiPrintColors(pcs) }).catch(() => {})
     getRibbonFonts().then(fts => {
       if (!fts.length) return
@@ -205,8 +204,46 @@ const RibbonConstructor = observer(function RibbonConstructor() {
   const qty = Math.max(manualQty, minQty)
   const total = pricePerUnit * qty
 
+  function getFieldValue(state: RibbonState, fieldType: string): string | null {
+    switch (fieldType) {
+      case 'printType': return state.printType
+      case 'material':  return state.material
+      case 'font':      return state.font
+      case 'textColor': return state.textColor
+      case 'color':     return state.color
+      case 'emblem':    return apiEmblems.find(e => e.sortOrder === state.emblemKey)?.slug ?? null
+      default:          return null
+    }
+  }
+
+  function getOptionStatus(type: string, slug: string): { disabled: boolean; warning: boolean; message: string | null } {
+    for (const rule of rules.incompatibilities) {
+      let matched = false
+      if (rule.typeA === type && rule.slugA === slug) {
+        const cur = getFieldValue(form, rule.typeB)
+        if (cur !== null && rule.slugsB.includes(cur)) matched = true
+      }
+      if (rule.typeB === type && rule.slugsB.includes(slug)) {
+        const cur = getFieldValue(form, rule.typeA)
+        if (cur !== null && cur === rule.slugA) matched = true
+      }
+      if (matched) return { disabled: !rule.isWarning, warning: rule.isWarning, message: rule.message }
+    }
+    return { disabled: false, warning: false, message: null }
+  }
+
   function update(patch: Partial<RibbonState>) {
-    setForm(prev => sanitizeRibbonState({ ...prev, ...patch }))
+    setForm(prev => {
+      const next = sanitizeRibbonState({ ...prev, ...patch })
+      // Sanitize forced text fields if a rule now applies
+      const ftRule = rules.forcedTexts.find(r =>
+        r.targetField === 'mainText' && getFieldValue(next, r.triggerType) === r.triggerSlug
+      )
+      if (ftRule && ftRule.values.length > 0 && !ftRule.values.includes(next.mainText)) {
+        return { ...next, mainText: ftRule.values[0] }
+      }
+      return next
+    })
   }
 
   function handleSave() {
@@ -389,15 +426,32 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             {/* 1. Main text */}
             <div className="rc-field">
               <label className="rc-label">Основний напис</label>
-              <Tooltip title={form.printType === '3d' ? 'При типі 3Д текст фіксований' : undefined}>
-                <Input
-                  value={form.printType === '3d' ? MAIN_TEXT_3D : form.mainText}
-                  onChange={e => update({ mainText: e.target.value })}
-                  placeholder="Випускник 2026"
-                  size="large"
-                  disabled={form.printType === '3d'}
-                />
-              </Tooltip>
+              {(() => {
+                const ftRule = rules.forcedTexts.find(r =>
+                  r.targetField === 'mainText' && getFieldValue(form, r.triggerType) === r.triggerSlug
+                )
+                if (ftRule) {
+                  return (
+                    <Tooltip title={ftRule.message ?? 'Доступні значення обмежені правилами'}>
+                      <Select
+                        value={form.mainText}
+                        options={ftRule.values.map(v => ({ value: v, label: v }))}
+                        onChange={v => update({ mainText: v })}
+                        size="large"
+                        style={{ width: '100%' }}
+                      />
+                    </Tooltip>
+                  )
+                }
+                return (
+                  <Input
+                    value={form.mainText}
+                    onChange={e => update({ mainText: e.target.value })}
+                    placeholder="Випускник 2026"
+                    size="large"
+                  />
+                )
+              })()}
             </div>
 
             {/* 2. Additional inscription block */}
@@ -448,14 +502,13 @@ const RibbonConstructor = observer(function RibbonConstructor() {
               <label className="rc-label">Матеріал</label>
               <div className="rc-chips">
                 {apiMaterials.map(m => {
-                  const rule = MATERIALS.find(r => r.value === m.slug)
-                  const disabled = rule ? isOptionDisabled(rule, form) : false
+                  const status = getOptionStatus('material', m.slug)
                   return (
                     <Chip
                       key={m.slug}
                       active={form.material === m.slug}
-                      disabled={disabled}
-                      disabledReason={rule?.disabledReason}
+                      disabled={status.disabled}
+                      disabledReason={status.message ?? undefined}
                       onClick={() => update({ material: m.slug as RibbonState['material'] })}
                     >
                       {m.name}
@@ -491,14 +544,13 @@ const RibbonConstructor = observer(function RibbonConstructor() {
               <label className="rc-label">Тип напису</label>
               <div className="rc-chips">
                 {apiPrintTypes.map(opt => {
-                  const rule = PRINT_TYPES.find(r => r.value === opt.slug)
-                  const disabled = rule ? isOptionDisabled(rule, form) : false
+                  const status = getOptionStatus('printType', opt.slug)
                   return (
                     <Chip
                       key={opt.slug}
                       active={form.printType === opt.slug}
-                      disabled={disabled}
-                      disabledReason={rule?.disabledReason}
+                      disabled={status.disabled}
+                      disabledReason={status.message ?? undefined}
                       onClick={() => update({ printType: opt.slug as RibbonState['printType'] })}
                     >
                       {opt.name}
@@ -513,14 +565,13 @@ const RibbonConstructor = observer(function RibbonConstructor() {
               <label className="rc-label">Колір напису</label>
               <div className="rc-color-swatches">
                 {apiPrintColors.filter(c => c.isForMainText).map(opt => {
-                  const rule = TEXT_COLORS.find(r => r.value === opt.slug)
-                  const disabled = rule ? isOptionDisabled(rule, form) : false
+                  const status = getOptionStatus('textColor', opt.slug)
                   return (
-                    <Tooltip key={opt.slug} title={disabled ? rule?.disabledReason : opt.name}>
+                    <Tooltip key={opt.slug} title={status.disabled ? (status.message ?? 'Недоступно') : opt.name}>
                       <button
-                        className={`rc-color-swatch ${form.textColor === opt.slug ? 'rc-color-swatch--active' : ''} ${disabled ? 'rc-color-swatch--disabled' : ''}`}
-                        onClick={disabled ? undefined : () => update({ textColor: opt.slug as RibbonState['textColor'] })}
-                        aria-disabled={disabled}
+                        className={`rc-color-swatch ${form.textColor === opt.slug ? 'rc-color-swatch--active' : ''} ${status.disabled ? 'rc-color-swatch--disabled' : ''}`}
+                        onClick={status.disabled ? undefined : () => update({ textColor: opt.slug as RibbonState['textColor'] })}
+                        aria-disabled={status.disabled}
                         aria-label={opt.name}
                       >
                         <span className="rc-color-swatch__dot" style={{ background: opt.hex }} />
@@ -535,17 +586,17 @@ const RibbonConstructor = observer(function RibbonConstructor() {
             <div className="rc-field">
               <label className="rc-label">Емблема</label>
               <div className="rc-emblem-swatches">
-                {EMBLEMS.map(e => {
-                  const disabled = isOptionDisabled(e, form)
+                {apiEmblems.map(e => {
+                  const status = getOptionStatus('emblem', e.slug)
                   return (
-                    <Tooltip key={e.key} title={disabled ? e.disabledReason : e.label}>
+                    <Tooltip key={e.sortOrder} title={status.disabled ? (status.message ?? 'Недоступно') : e.name}>
                       <button
-                        className={`rc-emblem-swatch ${form.emblemKey === e.key ? 'rc-emblem-swatch--active' : ''} ${disabled ? 'rc-emblem-swatch--disabled' : ''}`}
-                        onClick={disabled ? undefined : () => update({ emblemKey: e.key })}
-                        aria-disabled={disabled}
-                        aria-label={e.label}
+                        className={`rc-emblem-swatch ${form.emblemKey === e.sortOrder ? 'rc-emblem-swatch--active' : ''} ${status.disabled ? 'rc-emblem-swatch--disabled' : ''}`}
+                        onClick={status.disabled ? undefined : () => update({ emblemKey: e.sortOrder })}
+                        aria-disabled={status.disabled}
+                        aria-label={e.name}
                       >
-                        <EmblemSvg emblemKey={e.key} />
+                        <EmblemSvg emblemKey={e.sortOrder} />
                       </button>
                     </Tooltip>
                   )
@@ -558,14 +609,13 @@ const RibbonConstructor = observer(function RibbonConstructor() {
               <label className="rc-label">Шрифт</label>
               <div className="rc-font-swatches">
                 {apiFonts.map(f => {
-                  const rule = FONTS.find(r => r.value === f.slug)
-                  const disabled = rule ? isOptionDisabled(rule, form) : false
+                  const status = getOptionStatus('font', f.slug)
                   return (
-                    <Tooltip key={f.slug} title={disabled ? rule?.disabledReason : undefined}>
+                    <Tooltip key={f.slug} title={status.disabled ? (status.message ?? 'Недоступно') : undefined}>
                       <button
-                        className={`rc-font-swatch ${form.font === f.slug ? 'rc-font-swatch--active' : ''} ${disabled ? 'rc-font-swatch--disabled' : ''}`}
-                        onClick={disabled ? undefined : () => update({ font: f.slug as RibbonState['font'] })}
-                        aria-disabled={disabled}
+                        className={`rc-font-swatch ${form.font === f.slug ? 'rc-font-swatch--active' : ''} ${status.disabled ? 'rc-font-swatch--disabled' : ''}`}
+                        onClick={status.disabled ? undefined : () => update({ font: f.slug as RibbonState['font'] })}
+                        aria-disabled={status.disabled}
                         style={{ fontFamily: f.fontFamily }}
                       >
                         <span className="rc-font-swatch__preview">Аб</span>
