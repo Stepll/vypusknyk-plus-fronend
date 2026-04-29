@@ -107,6 +107,8 @@ src/
   pages/
     About/                         # /about
     Account/                       # /account — профіль, замовлення, дизайни
+    │                              # Заголовок: isEmailVerified → Tag "Активовано"; інакше → Button "Надіслати лист"
+    │                              # POST /auth/resend-activation для повторної відправки
     Auth/                          # /auth — вхід та реєстрація
     Cart/                          # /cart
     Catalog/                       # /catalog
@@ -118,6 +120,7 @@ src/
     Home/                          # /
     NotFound/                      # *
     OrderDetail/                   # /orders/:id
+    VerifyEmail/                   # /verify-email?token= — підтвердження email (рожевий градієнт, framer-motion)
     OrderSuccess/                  # /order-success
     ProductPage/                   # /catalog/:id
     RibbonConstructor/             # /constructor/ribbon
@@ -140,6 +143,7 @@ src/
   stores/
     RootStore.ts
     AuthStore.ts    # auth, refresh tokens, saved designs (id: number|string — string для optimistic temp IDs)
+    │               # AuthUser та AuthResponseDto мають isEmailVerified: boolean (?? false fallback)
     CartStore.ts    # localStorage; productId: number|null (null для кастомних стрічок)
     ToastStore.ts
 
