@@ -26,8 +26,8 @@ export default function VerifyEmail() {
 
   if (status === 'loading') {
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center', color: '#8c8c8c' }}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #ec4899 0%, #9333ea 50%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', color: '#fff' }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
           <p style={{ fontSize: 16 }}>Перевіряємо посилання...</p>
         </div>
@@ -38,7 +38,7 @@ export default function VerifyEmail() {
   const isSuccess = status === 'success'
 
   return (
-    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #ec4899 0%, #9333ea 50%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
       <motion.div
         initial={{ opacity: 0, y: 32, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
