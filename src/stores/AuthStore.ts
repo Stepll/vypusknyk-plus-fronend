@@ -13,6 +13,7 @@ import { DesignResponse } from '../api/types'
 interface AuthResponseDto {
   id: number
   email: string
+  isEmailVerified: boolean
   fullName: string
   phone: string | null
   token: string
@@ -22,6 +23,7 @@ interface AuthResponseDto {
 export interface AuthUser {
   id: number
   email: string
+  isEmailVerified: boolean
   name: string
   fullName: string
   phone: string
@@ -81,6 +83,7 @@ class AuthStore {
     return {
       id: dto.id,
       email: dto.email,
+      isEmailVerified: dto.isEmailVerified ?? false,
       name: dto.fullName || dto.email.split('@')[0],
       fullName: dto.fullName,
       phone: dto.phone ?? '',

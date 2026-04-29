@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
-import { Input, Button } from 'antd'
+import { Input, Button, Tag } from 'antd'
+import { api } from '../../api/client'
 import RibbonEditorPreview from '../../components/ui/RibbonEditorPreview'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
@@ -77,6 +78,8 @@ const Account = observer(function Account() {
   const [phone, setPhone]       = useState(auth.user?.phone ?? '')
   const [profileErrors, setProfileErrors] = useState<{ fullName?: string }>({})
 
+  const [sendingActivation, setSendingActivation] = useState(false)
+
   const [newPassword, setNewPassword]         = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordErrors, setPasswordErrors]   = useState<{ newPassword?: string; confirmPassword?: string }>({})
@@ -115,6 +118,18 @@ const Account = observer(function Account() {
     toast.show('Пароль змінено')
   }
 
+  async function handleSendActivation() {
+    setSendingActivation(true)
+    try {
+      await api.post('/api/v1/auth/resend-activation', {})
+      toast.show('Лист активації надіслано на ' + auth.user!.email)
+    } catch {
+      toast.show('Не вдалося надіслати лист')
+    } finally {
+      setSendingActivation(false)
+    }
+  }
+
   function handleLogout() {
     auth.logout()
     navigate('/')
@@ -139,9 +154,23 @@ const Account = observer(function Account() {
             <div className="ac-avatar">
               {(auth.user!.fullName || auth.user!.name).slice(0, 1).toUpperCase()}
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <p className="ac-header__name">{auth.user!.fullName || auth.user!.name}</p>
               <p className="ac-header__email">{auth.user!.email}</p>
+            </div>
+            <div style={{ flexShrink: 0 }}>
+              {auth.user!.isEmailVerified ? (
+                <Tag color="success" style={{ fontSize: 13, padding: '3px 10px' }}>Активовано</Tag>
+              ) : (
+                <Button
+                  size="small"
+                  loading={sendingActivation}
+                  onClick={handleSendActivation}
+                  style={{ fontSize: 13 }}
+                >
+                  Надіслати лист активації
+                </Button>
+              )}
             </div>
           </div>
 
