@@ -24,6 +24,7 @@ import NotFound from './pages/NotFound/NotFound'
 import OrderDetail from './pages/OrderDetail/OrderDetail'
 import GuestOrders from './pages/GuestOrders/GuestOrders'
 import InfoPage from './pages/InfoPage/InfoPage'
+import VerifyEmail from './pages/VerifyEmail/VerifyEmail'
 
 const antdTheme = {
   token: {
@@ -63,6 +64,7 @@ function App() {
               <Route path="/account" element={<Account />} />
               <Route path="/orders/:id" element={<OrderDetail />} />
               <Route path="/orders/guest" element={<GuestOrders />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/forgot-password" element={<Placeholder title="Відновлення паролю" />} />
               <Route path="/privacy" element={<InfoPage />} />
               <Route path="/terms" element={<InfoPage />} />
