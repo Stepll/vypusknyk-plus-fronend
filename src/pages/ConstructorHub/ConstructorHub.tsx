@@ -1,31 +1,23 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from 'antd'
 import RibbonPreview from '../../components/ui/RibbonPreview'
+import { getPageContent } from '../../api/page-content'
 import './ConstructorHub.css'
 
-const CONSTRUCTORS = [
-  {
-    key: 'ribbon',
-    href: '/constructor/ribbon',
-    title: 'Стрічка',
-    description: 'Оберіть колір, введіть імена, додайте емблему — і побачте результат у реальному часі.',
-    available: true,
-  },
-  {
-    key: 'medal',
-    href: '/constructor/medal',
-    title: 'Медаль',
-    description: 'Налаштуйте покриття, текст гравіювання та персональні дані для кожного учня.',
-    available: false,
-  },
-  {
-    key: 'cert',
-    href: '/constructor/cert',
-    title: 'Грамота',
-    description: 'Оберіть вид паперу, введіть назву нагороди та дані — отримайте готовий макет.',
-    available: false,
-  },
-]
+interface ConstructorsContent {
+  hero: { title: string; subtitle: string }
+  ribbon: { title: string; desc: string }
+  medal: { title: string; desc: string }
+  cert: { title: string; desc: string }
+}
+
+const DEFAULT: ConstructorsContent = {
+  hero: { title: 'Конструктори', subtitle: 'Налаштуйте продукт під себе — побачте результат ще до замовлення' },
+  ribbon: { title: 'Стрічка', desc: 'Оберіть колір, введіть імена, додайте емблему — і побачте результат у реальному часі.' },
+  medal: { title: 'Медаль', desc: 'Налаштуйте покриття, текст гравіювання та персональні дані для кожного учня.' },
+  cert: { title: 'Грамота', desc: 'Оберіть вид паперу, введіть назву нагороди та дані — отримайте готовий макет.' },
+}
 
 function RibbonIllustration() {
   return (
@@ -69,6 +61,12 @@ function CertIllustration() {
 }
 
 export default function ConstructorHub() {
+  const [cms, setCms] = useState<ConstructorsContent>(DEFAULT)
+
+  useEffect(() => {
+    getPageContent<ConstructorsContent>('constructors').then(setCms).catch(() => {})
+  }, [])
+
   return (
     <div className="hub-page">
       <div className="hub-top-band">
@@ -79,10 +77,8 @@ export default function ConstructorHub() {
             <span className="hub-breadcrumbs__current">Конструктори</span>
           </nav>
           <div className="hub-hero">
-            <h1 className="hub-hero__title">Конструктори</h1>
-            <p className="hub-hero__sub">
-              Налаштуйте продукт під себе — побачте результат ще до замовлення
-            </p>
+            <h1 className="hub-hero__title">{cms.hero.title}</h1>
+            <p className="hub-hero__sub">{cms.hero.subtitle}</p>
           </div>
         </div>
       </div>
@@ -94,15 +90,11 @@ export default function ConstructorHub() {
             <RibbonIllustration />
             <div className="hub-card__body">
               <div className="hub-card__header">
-                <h2 className="hub-card__title">Стрічка</h2>
+                <h2 className="hub-card__title">{cms.ribbon.title}</h2>
               </div>
-              <p className="hub-card__desc">
-                Оберіть колір, введіть імена, додайте емблему — і побачте результат у реальному часі.
-              </p>
+              <p className="hub-card__desc">{cms.ribbon.desc}</p>
               <Link to="/constructor/ribbon">
-                <Button type="primary" className="hub-card__btn">
-                  Відкрити конструктор
-                </Button>
+                <Button type="primary" className="hub-card__btn">Відкрити конструктор</Button>
               </Link>
             </div>
           </div>
@@ -110,22 +102,29 @@ export default function ConstructorHub() {
 
         {/* Medal + Cert — two columns */}
         <div className="hub-grid-two">
-          {[CONSTRUCTORS[1], CONSTRUCTORS[2]].map(c => (
-            <div key={c.key} className="hub-card hub-card--soon">
-              {c.key === 'medal' && <MedalIllustration />}
-              {c.key === 'cert' && <CertIllustration />}
-              <div className="hub-card__body">
-                <div className="hub-card__header">
-                  <h2 className="hub-card__title">{c.title}</h2>
-                  <span className="hub-card__soon-badge">Незабаром</span>
-                </div>
-                <p className="hub-card__desc">{c.description}</p>
-                <Button className="hub-card__btn" disabled>
-                  Відкрити конструктор
-                </Button>
+          <div className="hub-card hub-card--soon">
+            <MedalIllustration />
+            <div className="hub-card__body">
+              <div className="hub-card__header">
+                <h2 className="hub-card__title">{cms.medal.title}</h2>
+                <span className="hub-card__soon-badge">Незабаром</span>
               </div>
+              <p className="hub-card__desc">{cms.medal.desc}</p>
+              <Button className="hub-card__btn" disabled>Відкрити конструктор</Button>
             </div>
-          ))}
+          </div>
+
+          <div className="hub-card hub-card--soon">
+            <CertIllustration />
+            <div className="hub-card__body">
+              <div className="hub-card__header">
+                <h2 className="hub-card__title">{cms.cert.title}</h2>
+                <span className="hub-card__soon-badge">Незабаром</span>
+              </div>
+              <p className="hub-card__desc">{cms.cert.desc}</p>
+              <Button className="hub-card__btn" disabled>Відкрити конструктор</Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

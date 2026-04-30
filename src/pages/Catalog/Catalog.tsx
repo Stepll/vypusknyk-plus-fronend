@@ -6,7 +6,11 @@ import { Product, RibbonColor, SortOption } from '../../types/product'
 import { getProducts } from '../../api/products'
 import { getProductCategories } from '../../api/categories'
 import type { ProductCategoryResponse } from '../../api/types'
+import { getPageContent } from '../../api/page-content'
 import './Catalog.css'
+
+interface CatalogPromo { label: string; title: string; desc: string; buttonText: string; hint: string }
+const DEFAULT_PROMO: CatalogPromo = { label: 'Новинка', title: 'Конструктор стрічок', desc: "Створіть стрічку мрії онлайн — оберіть колір, вкажіть ім'я, клас, школу та емблему. Побачте результат у реальному часі ще до замовлення.", buttonText: 'Відкрити конструктор', hint: 'Безкоштовно, без реєстрації' }
 
 const COLOR_LABELS: Record<RibbonColor, string> = {
   coral: 'Корал',
@@ -83,9 +87,11 @@ export default function Catalog() {
   const [activeColors, setActiveColors] = useState<RibbonColor[]>([])
   const [onlyNew, setOnlyNew] = useState(false)
   const [sort, setSort] = useState<SortOption>('popular')
+  const [promo, setPromo] = useState<CatalogPromo>(DEFAULT_PROMO)
 
   useEffect(() => {
     getProductCategories().then(setCategories).catch(() => {})
+    getPageContent<{ constructorPromo: CatalogPromo }>('catalog').then(d => setPromo(d.constructorPromo)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -151,23 +157,14 @@ export default function Catalog() {
         <div className="catalog-container">
           <div className="constructor-promo__inner">
             <div className="constructor-promo__text">
-              <span className="constructor-promo__label">Новинка</span>
-              <h1 className="constructor-promo__title">
-                Конструктор стрічок
-              </h1>
-              <p className="constructor-promo__desc">
-                Створіть стрічку мрії онлайн — оберіть колір, вкажіть ім'я, клас,
-                школу та емблему. Побачте результат у реальному часі ще до замовлення.
-              </p>
+              <span className="constructor-promo__label">{promo.label}</span>
+              <h1 className="constructor-promo__title">{promo.title}</h1>
+              <p className="constructor-promo__desc">{promo.desc}</p>
               <div className="constructor-promo__actions">
                 <Link to="/constructor">
-                  <Button className="constructor-promo__btn-primary">
-                    Відкрити конструктор
-                  </Button>
+                  <Button className="constructor-promo__btn-primary">{promo.buttonText}</Button>
                 </Link>
-                <span className="constructor-promo__hint">
-                  Безкоштовно, без реєстрації
-                </span>
+                <span className="constructor-promo__hint">{promo.hint}</span>
               </div>
             </div>
             <div className="constructor-promo__preview">
