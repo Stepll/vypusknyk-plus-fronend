@@ -134,6 +134,28 @@ class AuthStore {
     }
   }
 
+  async loginWithGoogle(accessToken: string): Promise<void> {
+    this.loading = true
+    this.error = null
+    try {
+      const dto = await api.post<AuthResponseDto>('/api/v1/auth/google', { accessToken })
+      const user = this.toAuthUser(dto)
+      runInAction(() => {
+        this.user = user
+        this.loading = false
+      })
+      this.saveSession(user, dto)
+      this.loadDesigns()
+      claimGuestOrders(getGuestToken()).catch(() => {})
+    } catch (e) {
+      runInAction(() => {
+        this.error = e instanceof Error ? e.message : 'Помилка Google авторизації'
+        this.loading = false
+      })
+      throw e
+    }
+  }
+
   async register(email: string, password: string): Promise<void> {
     this.loading = true
     this.error = null

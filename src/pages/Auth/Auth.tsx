@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Input, Button } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
 import { observer } from 'mobx-react-lite'
+import { useGoogleLogin } from '@react-oauth/google'
 import { useRootStore } from '../../stores/RootStore'
 import './Auth.css'
 
@@ -77,9 +78,19 @@ const Auth = observer(function Auth() {
     }
   }
 
-  function handleGoogle() {
-    toast.show('Google авторизація — незабаром')
-  }
+  const handleGoogle = useGoogleLogin({
+    onSuccess: async tokenResponse => {
+      try {
+        await auth.loginWithGoogle(tokenResponse.access_token)
+        toast.show('Ви увійшли через Google')
+        navigate('/')
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Щось пішло не так'
+        toast.show(msg)
+      }
+    },
+    onError: () => toast.show('Google авторизація не вдалась'),
+  })
 
   return (
     <div className="auth-page">
