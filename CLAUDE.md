@@ -17,6 +17,7 @@
 | Анімації | Framer Motion |
 | Управління станом | MobX |
 | Роутинг | React Router DOM |
+| Google OAuth | @react-oauth/google — `GoogleOAuthProvider` в main.tsx, `useGoogleLogin` в Auth.tsx |
 | Стилі | Tailwind CSS + окремі CSS файли на компонент |
 | Backend | ASP.NET Core Web API (.NET 8), задеплоєний на Contabo |
 | База даних | PostgreSQL + Entity Framework Core |
@@ -110,6 +111,7 @@ src/
     │                              # Заголовок: isEmailVerified → Tag "Активовано"; інакше → Button "Надіслати лист"
     │                              # POST /auth/resend-activation для повторної відправки
     Auth/                          # /auth — вхід та реєстрація
+    │                              # Google OAuth: useGoogleLogin (implicit flow) → access_token → loginWithGoogle()
     Cart/                          # /cart
     Catalog/                       # /catalog
     Checkout/                      # /checkout
@@ -144,6 +146,7 @@ src/
     RootStore.ts
     AuthStore.ts    # auth, refresh tokens, saved designs (id: number|string — string для optimistic temp IDs)
     │               # AuthUser та AuthResponseDto мають isEmailVerified: boolean (?? false fallback)
+    │               # loginWithGoogle(accessToken) → POST /api/v1/auth/google { accessToken }
     CartStore.ts    # localStorage; productId: number|null (null для кастомних стрічок)
     ToastStore.ts
 
@@ -193,6 +196,7 @@ src/
 ## API
 
 - Base URL: `VITE_API_URL` (prod: `https://75.119.152.4.sslip.io`)
+- `VITE_GOOGLE_CLIENT_ID` — OAuth 2.0 Client ID з Google Cloud Console (для GoogleOAuthProvider)
 - Всі виклики через `src/api/` — ніколи напряму в компонентах
 - `client.ts` auto-refresh при 401; при невдачі — `auth:session-expired` → AuthStore скидає стан
 - Гостьові сесії: `guestToken` UUID генерується в `api/guest.ts`, зберігається в localStorage
