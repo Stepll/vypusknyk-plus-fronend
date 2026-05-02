@@ -5,6 +5,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: 'Каталог', href: '/catalog' },
   { label: 'Конструктор', href: '/constructor' },
   { label: 'Шкільні свята', href: '/events' },
+  { label: 'Акції', href: '/promotions' },
   { label: 'Про нас', href: '/about' },
   { label: 'Контакти', href: '/contacts' },
 ]

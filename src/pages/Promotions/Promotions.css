@@ -1,0 +1,447 @@
+/* ═══════════════════════════════════════════════════════════════
+   PROMOTIONS PAGE
+   ═══════════════════════════════════════════════════════════════ */
+
+.promotions-page {
+  min-height: 100vh;
+}
+
+/* ─── Hero ────────────────────────────────────────────────────── */
+
+.promo-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #c2185b 0%, #e91e8c 45%, #9c27b0 100%);
+  padding: 140px 24px 100px;
+  text-align: center;
+  color: #fff;
+}
+
+.promo-hero__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.promo-hero__float {
+  position: absolute;
+  font-weight: 800;
+  opacity: 0.12;
+  white-space: nowrap;
+  animation: promo-float 6s ease-in-out infinite alternate;
+}
+
+.promo-hero__float--1 {
+  font-size: 80px;
+  top: 15%;
+  left: 8%;
+  animation-delay: 0s;
+  transform: rotate(-15deg);
+}
+
+.promo-hero__float--2 {
+  font-size: 64px;
+  top: 20%;
+  right: 10%;
+  animation-delay: 1.5s;
+  transform: rotate(12deg);
+}
+
+.promo-hero__float--3 {
+  font-size: 90px;
+  bottom: 20%;
+  left: 15%;
+  animation-delay: 0.8s;
+  transform: rotate(-8deg);
+  opacity: 0.15;
+}
+
+.promo-hero__float--4 {
+  font-size: 56px;
+  bottom: 25%;
+  right: 8%;
+  animation-delay: 2s;
+  transform: rotate(20deg);
+}
+
+@keyframes promo-float {
+  from { transform: translateY(0) rotate(var(--r, -15deg)); }
+  to   { transform: translateY(-20px) rotate(var(--r, -15deg)); }
+}
+
+.promo-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.promo-hero__eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.promo-hero__title {
+  font-size: clamp(36px, 6vw, 60px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.promo-hero__subtitle {
+  font-size: 17px;
+  opacity: 0.85;
+  max-width: 480px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.promo-hero__btn {
+  background: #fff !important;
+  color: #e91e8c !important;
+  border: none !important;
+  font-weight: 700 !important;
+  padding: 0 32px !important;
+  height: 48px !important;
+  border-radius: 24px !important;
+  font-size: 15px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+}
+
+.promo-hero__btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* ─── Section ─────────────────────────────────────────────────── */
+
+.promo-section {
+  padding: 72px 24px;
+  background: #fff;
+}
+
+.promo-section--dark {
+  background: #fdf2f8;
+}
+
+.promo-section__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.promo-section__header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.promo-section__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 10px;
+}
+
+.promo-section__subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ─── Promotion cards grid ────────────────────────────────────── */
+
+.promo-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.promo-card {
+  background: #fff;
+  border: 1.5px solid #f3f4f6;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.promo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+}
+
+.promo-card--upcoming {
+  opacity: 0.85;
+  border-style: dashed;
+}
+
+.promo-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  align-self: flex-start;
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.promo-card--upcoming .promo-card__badge {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.promo-card__discount {
+  font-size: 40px;
+  font-weight: 900;
+  color: #e91e8c;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.promo-card__name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.promo-card__desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.promo-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.promo-card__meta span {
+  font-size: 12px;
+  color: #9ca3af;
+  background: #f9fafb;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+}
+
+.promo-card__cta {
+  margin-top: auto;
+}
+
+/* ─── Activate ────────────────────────────────────────────────── */
+
+.promo-activate {
+  max-width: 520px;
+  margin: 0 auto 48px;
+}
+
+.promo-activate__row {
+  display: flex;
+  gap: 10px;
+}
+
+.promo-activate__input {
+  flex: 1;
+  border-radius: 12px !important;
+}
+
+.promo-activate__btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  padding: 0 24px !important;
+}
+
+/* ─── Tickets grid ────────────────────────────────────────────── */
+
+.promo-tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* ─── Ticket card ─────────────────────────────────────────────── */
+
+.promo-ticket {
+  border-radius: 16px;
+  overflow: visible;
+  filter: drop-shadow(0 6px 20px color-mix(in srgb, var(--ticket-color) 40%, transparent));
+  transition: transform 0.2s;
+}
+
+.promo-ticket:hover {
+  transform: translateY(-4px);
+}
+
+.promo-ticket__main {
+  background: var(--ticket-color);
+  background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
+  border-radius: 16px 16px 0 0;
+  padding: 24px 24px 20px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  min-height: 130px;
+}
+
+.promo-ticket__circle {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.promo-ticket__circle--tr {
+  top: -30px;
+  right: -20px;
+}
+
+.promo-ticket__circle--bl {
+  bottom: -40px;
+  left: -20px;
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.promo-ticket__brand {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  opacity: 0.7;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.promo-ticket__name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.promo-ticket__discount {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  opacity: 0.97;
+}
+
+.promo-ticket__desc {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.promo-ticket__divider {
+  background: var(--ticket-color);
+  background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  height: 24px;
+}
+
+.promo-ticket__notch {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fdf2f8;
+  flex-shrink: 0;
+}
+
+.promo-ticket__line {
+  flex: 1;
+  border-top: 2px dashed rgba(255, 255, 255, 0.4);
+  margin: 0 4px;
+}
+
+.promo-ticket__footer {
+  background: var(--ticket-color);
+  background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
+  border-radius: 0 0 16px 16px;
+  padding: 12px 24px 18px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.promo-ticket__footer span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ─── Empty / Login CTA ───────────────────────────────────────── */
+
+.promo-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: #9ca3af;
+}
+
+.promo-empty__icon {
+  display: block;
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.promo-empty__sub {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.promo-login-cta {
+  text-align: center;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #6b7280;
+}
+
+.promo-login-cta__icon {
+  font-size: 40px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .promo-activate__row {
+    flex-direction: column;
+  }
+
+  .promo-cards-grid,
+  .promo-tickets-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .promo-hero {
+    padding: 120px 16px 80px;
+  }
+}

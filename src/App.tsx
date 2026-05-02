@@ -25,6 +25,7 @@ import OrderDetail from './pages/OrderDetail/OrderDetail'
 import GuestOrders from './pages/GuestOrders/GuestOrders'
 import InfoPage from './pages/InfoPage/InfoPage'
 import VerifyEmail from './pages/VerifyEmail/VerifyEmail'
+import Promotions from './pages/Promotions/Promotions'
 
 const antdTheme = {
   token: {
@@ -54,6 +55,7 @@ function App() {
               <Route path="/catalog/:id" element={<ProductPage />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/promotions" element={<Promotions />} />
               <Route path="/about" element={<About />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/constructor" element={<ConstructorHub />} />
