@@ -49,6 +49,7 @@ export function activatePromoCode(code: string): Promise<PromoCodeCardResponse> 
 export function calculateDiscount(
   orderTotal: number,
   userPromoCardId?: number,
+  productIds?: number[],
 ): Promise<CalculateDiscountResponse> {
-  return api.post('/api/v1/promotions/calculate', { orderTotal, userPromoCardId })
+  return api.post('/api/v1/promotions/calculate', { orderTotal, userPromoCardId, productIds: productIds ?? [] })
 }
