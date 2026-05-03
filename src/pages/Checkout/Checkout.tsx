@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Button, Input, Select } from 'antd'
+import { Button, Input } from 'antd'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { cartItemTotal } from '../../stores/CartStore'
@@ -347,19 +347,32 @@ const Checkout = observer(function Checkout() {
             {auth.isLoggedIn && myCards.length > 0 && (
               <div className="co-promo-select">
                 <label className="co-promo-select__label">Промокод</label>
-                <Select
-                  allowClear
-                  placeholder="Оберіть промокод зі знижкою"
-                  value={selectedPromoCardId ?? undefined}
-                  onChange={v => setSelectedPromoCardId(v ?? null)}
-                  style={{ width: '100%' }}
-                  options={myCards.map(c => ({
-                    value: c.id,
-                    label: c.discountType === 'Percentage'
-                      ? `${c.displayName} — −${c.discountValue}%`
-                      : `${c.displayName} — −${c.discountValue} ₴`,
-                  }))}
-                />
+                <div className="co-promo-tickets">
+                  {myCards.map(card => {
+                    const isSelected = selectedPromoCardId === card.id
+                    const discountLabel = card.discountType === 'Percentage'
+                      ? `−${card.discountValue}%`
+                      : `−${card.discountValue} ₴`
+                    return (
+                      <button
+                        key={card.id}
+                        className={`co-promo-ticket ${isSelected ? 'co-promo-ticket--selected' : ''}`}
+                        style={{ '--ticket-color': card.cardColor } as React.CSSProperties}
+                        onClick={() => setSelectedPromoCardId(isSelected ? null : card.id)}
+                        type="button"
+                      >
+                        <div className="co-promo-ticket__left">
+                          <div className="co-promo-ticket__name">{card.displayName}</div>
+                          {card.minOrderAmount && (
+                            <div className="co-promo-ticket__meta">від {card.minOrderAmount} ₴</div>
+                          )}
+                        </div>
+                        <div className="co-promo-ticket__discount">{discountLabel}</div>
+                        {isSelected && <div className="co-promo-ticket__check">✓</div>}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             )}
 

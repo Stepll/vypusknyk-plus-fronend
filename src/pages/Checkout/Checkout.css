@@ -291,6 +291,81 @@
   margin-bottom: 8px;
 }
 
+.co-promo-tickets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.co-promo-ticket {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ticket-color) 35%, transparent);
+  position: relative;
+}
+
+.co-promo-ticket:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--ticket-color) 45%, transparent);
+}
+
+.co-promo-ticket--selected {
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ticket-color) 40%, transparent),
+              0 4px 16px color-mix(in srgb, var(--ticket-color) 45%, transparent);
+}
+
+.co-promo-ticket__left {
+  flex: 1;
+  min-width: 0;
+}
+
+.co-promo-ticket__name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.co-promo-ticket__meta {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 1px;
+}
+
+.co-promo-ticket__discount {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.co-promo-ticket__check {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Price breakdown ───────────────────────────────────────────────────── */
 
 .co-sidebar__breakdown {
