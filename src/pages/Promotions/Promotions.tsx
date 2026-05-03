@@ -10,6 +10,47 @@ import {
 } from '../../api/promotions'
 import './Promotions.css'
 
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+
+function IconNoPromotions() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="18" width="44" height="26" rx="5" stroke="#d1d5db" strokeWidth="2" fill="#f9fafb"/>
+      <path d="M6 26h44" stroke="#d1d5db" strokeWidth="2"/>
+      <circle cx="40" cy="32" r="4" stroke="#e91e8c" strokeWidth="1.5" fill="none"/>
+      <path d="M37.5 34.5l5-5" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M14 31h14" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M14 36h8" stroke="#e5e7eb" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="44" cy="14" r="7" fill="#fdf2f8" stroke="#e91e8c" strokeWidth="1.5"/>
+      <path d="M44 11v3.5l2 1.5" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconNoTickets() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 22a4 4 0 0 1 0-8h40a4 4 0 0 1 0 8v4a4 4 0 0 1 0 8H8a4 4 0 0 1 0-8v-4z" stroke="#d1d5db" strokeWidth="2" fill="#f9fafb"/>
+      <line x1="22" y1="14" x2="22" y2="42" stroke="#d1d5db" strokeWidth="2" strokeDasharray="3 3"/>
+      <path d="M28 24l2 2 4-4" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="42" cy="14" r="7" fill="#fdf2f8" stroke="#e91e8c" strokeWidth="1.5"/>
+      <path d="M39.5 14h5M42 11.5v5" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M39.8 16.2l4.4-4.4M44.2 16.2l-4.4-4.4" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IconLock() {
+  return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="22" width="28" height="20" rx="4" fill="#fdf2f8" stroke="#e91e8c" strokeWidth="2"/>
+      <path d="M16 22v-6a8 8 0 1 1 16 0v6" stroke="#e91e8c" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="24" cy="32" r="3" fill="#e91e8c"/>
+      <path d="M24 35v4" stroke="#e91e8c" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDiscount(type: 'Percentage' | 'FixedAmount', value: number) {
@@ -171,7 +212,12 @@ const Promotions = observer(function Promotions() {
         <div className="promo-hero__bg" aria-hidden>
           <span className="promo-hero__float promo-hero__float--1">−15%</span>
           <span className="promo-hero__float promo-hero__float--2">−20%</span>
-          <span className="promo-hero__float promo-hero__float--3">🎟</span>
+          <span className="promo-hero__float promo-hero__float--3">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 24a5 5 0 0 1 0-10h44a5 5 0 0 1 0 10v4a5 5 0 0 1 0 10H8a5 5 0 0 1 0-10v-4z" fill="white"/>
+              <line x1="24" y1="14" x2="24" y2="46" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeDasharray="4 3"/>
+            </svg>
+          </span>
           <span className="promo-hero__float promo-hero__float--4">−10%</span>
         </div>
         <div className="promo-hero__content">
@@ -202,7 +248,7 @@ const Promotions = observer(function Promotions() {
       <section className="promo-section">
         <div className="promo-section__inner">
           <div className="promo-section__header">
-            <h2 className="promo-section__title">🔥 Поточні акції</h2>
+            <h2 className="promo-section__title">Поточні акції</h2>
             <p className="promo-section__subtitle">
               Застосовуються автоматично при оформленні замовлення
             </p>
@@ -210,7 +256,7 @@ const Promotions = observer(function Promotions() {
 
           {promotions.length === 0 ? (
             <div className="promo-empty">
-              <span className="promo-empty__icon">🎉</span>
+              <span className="promo-empty__icon"><IconNoPromotions /></span>
               <p>Зараз немає активних акцій</p>
               <p className="promo-empty__sub">Стежте за оновленнями — незабаром!</p>
             </div>
@@ -228,7 +274,7 @@ const Promotions = observer(function Promotions() {
       <section className="promo-section promo-section--dark" ref={cardsRef}>
         <div className="promo-section__inner">
           <div className="promo-section__header">
-            <h2 className="promo-section__title">🎟 Мої промокоди</h2>
+            <h2 className="promo-section__title">Мої промокоди</h2>
             <p className="promo-section__subtitle">
               Введи код — отримай картку знижки та застосуй при замовленні
             </p>
@@ -261,7 +307,7 @@ const Promotions = observer(function Promotions() {
           {/* Cards */}
           {!auth.isLoggedIn ? (
             <div className="promo-login-cta">
-              <span className="promo-login-cta__icon">🔒</span>
+              <span className="promo-login-cta__icon"><IconLock /></span>
               <p>Увійдіть в акаунт, щоб бачити і зберігати свої промокоди</p>
               <Link to="/auth">
                 <Button type="primary" size="large">Увійти</Button>
@@ -273,7 +319,7 @@ const Promotions = observer(function Promotions() {
             </div>
           ) : cards.length === 0 ? (
             <div className="promo-empty">
-              <span className="promo-empty__icon">🎟</span>
+              <span className="promo-empty__icon"><IconNoTickets /></span>
               <p>У тебе ще немає промокодів</p>
               <p className="promo-empty__sub">Введи код вище, щоб отримати картку знижки</p>
             </div>
