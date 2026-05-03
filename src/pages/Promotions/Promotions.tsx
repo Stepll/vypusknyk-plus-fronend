@@ -105,9 +105,7 @@ function PromoTicket({ card, index }: { card: PromoCodeCardResponse; index: numb
         )}
       </div>
       <div className="promo-ticket__divider">
-        <span className="promo-ticket__notch promo-ticket__notch--l" />
         <span className="promo-ticket__line" />
-        <span className="promo-ticket__notch promo-ticket__notch--r" />
       </div>
       <div className="promo-ticket__footer">
         {card.minOrderAmount && (

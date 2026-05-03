@@ -360,32 +360,21 @@
   background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
   display: flex;
   align-items: center;
-  padding: 0;
-  height: 32px;
-  overflow: visible;
-}
-
-.promo-ticket__notch {
-  display: block;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #fdf2f8;
-  flex-shrink: 0;
-}
-
-.promo-ticket__notch--l {
-  margin-left: -16px;
-}
-
-.promo-ticket__notch--r {
-  margin-right: -16px;
+  padding: 0 24px;
+  height: 28px;
+  -webkit-mask-image:
+    radial-gradient(circle 14px at 0% 50%, transparent 98%, black 100%),
+    radial-gradient(circle 14px at 100% 50%, transparent 98%, black 100%);
+  -webkit-mask-composite: destination-in;
+  mask-image:
+    radial-gradient(circle 14px at 0% 50%, transparent 98%, black 100%),
+    radial-gradient(circle 14px at 100% 50%, transparent 98%, black 100%);
+  mask-composite: intersect;
 }
 
 .promo-ticket__line {
   flex: 1;
   border-top: 2px dashed rgba(255, 255, 255, 0.4);
-  margin: 0 4px;
 }
 
 .promo-ticket__footer {
