@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Button, Input } from 'antd'
+import { Button, Input, Select } from 'antd'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { cartItemTotal } from '../../stores/CartStore'
@@ -8,6 +8,8 @@ import { createOrder } from '../../api/orders'
 import { getGuestToken } from '../../api/guest'
 import { getDeliveryMethods } from '../../api/delivery-methods'
 import { getPaymentMethods } from '../../api/payment-methods'
+import { getMyPromoCards, calculateDiscount } from '../../api/promotions'
+import type { PromoCodeCardResponse, CalculateDiscountResponse } from '../../api/promotions'
 import type { DeliveryMethodResponse, DeliveryCheckoutField, PaymentMethodResponse } from '../../api/types'
 import './Checkout.css'
 
@@ -90,6 +92,9 @@ const Checkout = observer(function Checkout() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [myCards, setMyCards] = useState<PromoCodeCardResponse[]>([])
+  const [selectedPromoCardId, setSelectedPromoCardId] = useState<number | null>(null)
+  const [discountInfo, setDiscountInfo] = useState<CalculateDiscountResponse | null>(null)
 
   useEffect(() => {
     getDeliveryMethods().then(methods => {
@@ -104,7 +109,17 @@ const Checkout = observer(function Checkout() {
       const first = methods.find(m => m.isEnabled)
       if (first) setForm(prev => ({ ...prev, payment: first.slug }))
     }).catch(() => {})
-  }, [])
+
+    if (auth.isLoggedIn) {
+      getMyPromoCards().then(setMyCards).catch(() => {})
+    }
+  }, [auth.isLoggedIn])
+
+  useEffect(() => {
+    calculateDiscount(cart.totalPrice, selectedPromoCardId ?? undefined)
+      .then(setDiscountInfo)
+      .catch(() => setDiscountInfo(null))
+  }, [cart.totalPrice, selectedPromoCardId])
 
   if (cart.items.length === 0 && !submitted) {
     return <Navigate to="/cart" replace />
@@ -158,6 +173,7 @@ const Checkout = observer(function Checkout() {
         email:   form.email || undefined,
         comment: form.comment || undefined,
         guestToken: auth.isLoggedIn ? undefined : getGuestToken(),
+        userPromoCardId: selectedPromoCardId ?? undefined,
       })
       setSubmitted(true)
       cart.clear()
@@ -324,11 +340,59 @@ const Checkout = observer(function Checkout() {
               ))}
             </div>
 
+            {/* Promo card selector */}
+            {auth.isLoggedIn && myCards.length > 0 && (
+              <div className="co-promo-select">
+                <label className="co-promo-select__label">Промокод</label>
+                <Select
+                  allowClear
+                  placeholder="Оберіть промокод зі знижкою"
+                  value={selectedPromoCardId ?? undefined}
+                  onChange={v => setSelectedPromoCardId(v ?? null)}
+                  style={{ width: '100%' }}
+                  options={myCards.map(c => ({
+                    value: c.id,
+                    label: c.discountType === 'Percentage'
+                      ? `${c.displayName} — −${c.discountValue}%`
+                      : `${c.displayName} — −${c.discountValue} ₴`,
+                  }))}
+                />
+              </div>
+            )}
+
+            <div className="co-sidebar__divider" />
+
+            {/* Price breakdown */}
+            <div className="co-sidebar__breakdown">
+              <div className="co-sidebar__row">
+                <span>Сума</span>
+                <span>{cart.totalPrice} грн</span>
+              </div>
+              {discountInfo && discountInfo.promotionDiscount > 0 && (
+                <div className="co-sidebar__row co-sidebar__row--discount">
+                  <span>
+                    Акція{discountInfo.appliedPromotion ? ` «${discountInfo.appliedPromotion.name}»` : ''}
+                  </span>
+                  <span>−{discountInfo.promotionDiscount} грн</span>
+                </div>
+              )}
+              {discountInfo && discountInfo.promoCodeDiscount > 0 && (
+                <div className="co-sidebar__row co-sidebar__row--discount">
+                  <span>
+                    {discountInfo.appliedPromoCode?.displayName ?? 'Промокод'}
+                  </span>
+                  <span>−{discountInfo.promoCodeDiscount} грн</span>
+                </div>
+              )}
+            </div>
+
             <div className="co-sidebar__divider" />
 
             <div className="co-sidebar__total">
               <span>До сплати</span>
-              <span className="co-sidebar__total-value">{cart.totalPrice} грн</span>
+              <span className="co-sidebar__total-value">
+                {discountInfo ? discountInfo.finalTotal : cart.totalPrice} грн
+              </span>
             </div>
 
             <Button

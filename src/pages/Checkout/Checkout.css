@@ -275,6 +275,43 @@
   border-radius: 999px;
 }
 
+/* ── Promo select ──────────────────────────────────────────────────────── */
+
+.co-promo-select {
+  margin-bottom: 16px;
+}
+
+.co-promo-select__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* ── Price breakdown ───────────────────────────────────────────────────── */
+
+.co-sidebar__breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.co-sidebar__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.co-sidebar__row--discount {
+  color: #059669;
+  font-weight: 600;
+}
+
 /* ── Divider + total ───────────────────────────────────────────────────── */
 
 .co-sidebar__divider {

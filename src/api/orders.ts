@@ -27,6 +27,7 @@ export interface CreateOrderPayload {
   email?: string
   comment?: string
   guestToken?: string
+  userPromoCardId?: number | null
 }
 
 export function createOrder(payload: CreateOrderPayload): Promise<OrderResponse> {
