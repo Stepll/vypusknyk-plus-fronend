@@ -280,15 +280,16 @@
 
 /* ─── Ticket card ─────────────────────────────────────────────── */
 
+.promo-ticket-wrap {
+  perspective: 900px;
+}
+
 .promo-ticket {
   border-radius: 16px;
   overflow: visible;
   filter: drop-shadow(0 6px 20px color-mix(in srgb, var(--ticket-color) 40%, transparent));
-  transition: transform 0.2s;
-}
-
-.promo-ticket:hover {
-  transform: translateY(-4px);
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .promo-ticket__main {
@@ -359,17 +360,26 @@
   background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
   display: flex;
   align-items: center;
-  padding: 0 6px;
-  height: 24px;
+  padding: 0;
+  height: 32px;
+  overflow: visible;
 }
 
 .promo-ticket__notch {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #fdf2f8;
   flex-shrink: 0;
+}
+
+.promo-ticket__notch--l {
+  margin-left: -16px;
+}
+
+.promo-ticket__notch--r {
+  margin-right: -16px;
 }
 
 .promo-ticket__line {

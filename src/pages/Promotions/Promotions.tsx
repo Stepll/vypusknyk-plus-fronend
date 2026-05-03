@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { Button, Input, message } from 'antd'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
@@ -65,15 +65,33 @@ function formatDate(iso: string) {
 
 function PromoTicket({ card, index }: { card: PromoCodeCardResponse; index: number }) {
   const color = card.cardColor
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [6, -6]), { stiffness: 400, damping: 30 })
+  const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-6, 6]), { stiffness: 400, damping: 30 })
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    mx.set((e.clientX - rect.left) / rect.width - 0.5)
+    my.set((e.clientY - rect.top) / rect.height - 0.5)
+  }
+
+  function handleMouseLeave() {
+    mx.set(0)
+    my.set(0)
+  }
 
   return (
-    <motion.div
-      className="promo-ticket"
-      style={{ '--ticket-color': color } as React.CSSProperties}
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.08 }}
-    >
+    <div className="promo-ticket-wrap">
+      <motion.div
+        className="promo-ticket"
+        style={{ '--ticket-color': color, rotateX, rotateY } as React.CSSProperties}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.08 }}
+      >
       <div className="promo-ticket__main">
         <div className="promo-ticket__brand">ВИПУСКНИК+</div>
         <div className="promo-ticket__circle promo-ticket__circle--tr" />
@@ -103,6 +121,7 @@ function PromoTicket({ card, index }: { card: PromoCodeCardResponse; index: numb
         )}
       </div>
     </motion.div>
+    </div>
   )
 }
 
