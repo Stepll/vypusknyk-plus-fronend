@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Button, Input } from 'antd'
 import { observer } from 'mobx-react-lite'
@@ -76,6 +76,93 @@ const MATERIAL_LABELS: Record<string, string> = { atlas: 'Атлас', silk: 'Ш
 const PRINT_LABELS: Record<string, string> = { foil: 'Фольга', film: 'Плівка', '3d': '3Д' }
 
 // ─── Component ───────────────────────────────────────────────────────────────
+
+// ─── PromoCardSelect ─────────────────────────────────────────────────────────
+
+function PromoCardSelect({
+  cards, selectedId, onChange,
+}: {
+  cards: PromoCodeCardResponse[]
+  selectedId: number | null
+  onChange: (id: number | null) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const selected = cards.find(c => c.id === selectedId) ?? null
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  function discountLabel(card: PromoCodeCardResponse) {
+    return card.discountType === 'Percentage' ? `−${card.discountValue}%` : `−${card.discountValue} ₴`
+  }
+
+  return (
+    <div className="co-promo-select" ref={ref}>
+      <label className="co-promo-select__label">Промокод</label>
+
+      {/* Trigger */}
+      <div className="co-promo-trigger" onClick={() => setOpen(v => !v)}>
+        {selected ? (
+          <div
+            className="co-promo-trigger__card"
+            style={{ '--ticket-color': selected.cardColor } as React.CSSProperties}
+          >
+            <span className="co-promo-trigger__name">{selected.displayName}</span>
+            <span className="co-promo-trigger__discount">{discountLabel(selected)}</span>
+          </div>
+        ) : (
+          <span className="co-promo-trigger__placeholder">Використати промокод</span>
+        )}
+        <svg
+          className={`co-promo-trigger__arrow ${open ? 'co-promo-trigger__arrow--open' : ''}`}
+          width="16" height="16" viewBox="0 0 16 16" fill="none"
+        >
+          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="co-promo-dropdown">
+          {selected && (
+            <button
+              className="co-promo-dropdown__clear"
+              onClick={() => { onChange(null); setOpen(false) }}
+              type="button"
+            >
+              Не використовувати промокод
+            </button>
+          )}
+          {cards.map(card => (
+            <button
+              key={card.id}
+              className={`co-promo-ticket ${card.id === selectedId ? 'co-promo-ticket--selected' : ''}`}
+              style={{ '--ticket-color': card.cardColor } as React.CSSProperties}
+              onClick={() => { onChange(card.id); setOpen(false) }}
+              type="button"
+            >
+              <div className="co-promo-ticket__left">
+                <div className="co-promo-ticket__name">{card.displayName}</div>
+                {card.minOrderAmount && (
+                  <div className="co-promo-ticket__meta">від {card.minOrderAmount} ₴</div>
+                )}
+              </div>
+              <div className="co-promo-ticket__discount">{discountLabel(card)}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Checkout ─────────────────────────────────────────────────────────────────
 
 const Checkout = observer(function Checkout() {
   const { cart, auth, toast } = useRootStore()
@@ -345,35 +432,11 @@ const Checkout = observer(function Checkout() {
 
             {/* Promo card selector */}
             {auth.isLoggedIn && myCards.length > 0 && (
-              <div className="co-promo-select">
-                <label className="co-promo-select__label">Промокод</label>
-                <div className="co-promo-tickets">
-                  {myCards.map(card => {
-                    const isSelected = selectedPromoCardId === card.id
-                    const discountLabel = card.discountType === 'Percentage'
-                      ? `−${card.discountValue}%`
-                      : `−${card.discountValue} ₴`
-                    return (
-                      <button
-                        key={card.id}
-                        className={`co-promo-ticket ${isSelected ? 'co-promo-ticket--selected' : ''}`}
-                        style={{ '--ticket-color': card.cardColor } as React.CSSProperties}
-                        onClick={() => setSelectedPromoCardId(isSelected ? null : card.id)}
-                        type="button"
-                      >
-                        <div className="co-promo-ticket__left">
-                          <div className="co-promo-ticket__name">{card.displayName}</div>
-                          {card.minOrderAmount && (
-                            <div className="co-promo-ticket__meta">від {card.minOrderAmount} ₴</div>
-                          )}
-                        </div>
-                        <div className="co-promo-ticket__discount">{discountLabel}</div>
-                        {isSelected && <div className="co-promo-ticket__check">✓</div>}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
+              <PromoCardSelect
+                cards={myCards}
+                selectedId={selectedPromoCardId}
+                onChange={setSelectedPromoCardId}
+              />
             )}
 
             <div className="co-sidebar__divider" />

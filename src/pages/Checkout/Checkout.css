@@ -279,6 +279,7 @@
 
 .co-promo-select {
   margin-bottom: 16px;
+  position: relative;
 }
 
 .co-promo-select__label {
@@ -291,11 +292,108 @@
   margin-bottom: 8px;
 }
 
-.co-promo-tickets {
+/* ── Promo trigger (select-like field) ─────────────────────────────────────── */
+
+.co-promo-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  user-select: none;
+}
+
+.co-promo-trigger:hover {
+  border-color: #e91e8c;
+}
+
+.co-promo-trigger__placeholder {
+  flex: 1;
+  font-size: 14px;
+  color: #bfbfbf;
+}
+
+.co-promo-trigger__card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
+  color: #fff;
+  border-radius: 7px;
+  padding: 5px 10px;
+  margin: 5px 0;
+  min-width: 0;
+}
+
+.co-promo-trigger__name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.co-promo-trigger__discount {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.co-promo-trigger__arrow {
+  color: #8c8c8c;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.co-promo-trigger__arrow--open {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown ──────────────────────────────────────────────────────────────── */
+
+.co-promo-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
+
+.co-promo-dropdown__clear {
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #8c8c8c;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.co-promo-dropdown__clear:hover {
+  background: #f5f5f5;
+  color: #595959;
+}
+
+/* ── Ticket item in dropdown ───────────────────────────────────────────────── */
 
 .co-promo-ticket {
   display: flex;
@@ -303,26 +401,23 @@
   gap: 12px;
   width: 100%;
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 2px solid transparent;
   background: linear-gradient(135deg, var(--ticket-color) 0%, color-mix(in srgb, var(--ticket-color) 75%, #000) 100%);
   color: #fff;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--ticket-color) 35%, transparent);
-  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ticket-color) 30%, transparent);
 }
 
 .co-promo-ticket:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--ticket-color) 45%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--ticket-color) 45%, transparent);
 }
 
 .co-promo-ticket--selected {
-  border-color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ticket-color) 40%, transparent),
-              0 4px 16px color-mix(in srgb, var(--ticket-color) 45%, transparent);
+  border-color: rgba(255, 255, 255, 0.6);
 }
 
 .co-promo-ticket__left {
@@ -349,21 +444,6 @@
   font-weight: 900;
   letter-spacing: -0.5px;
   flex-shrink: 0;
-}
-
-.co-promo-ticket__check {
-  position: absolute;
-  top: 6px;
-  right: 10px;
-  font-size: 11px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* ── Price breakdown ───────────────────────────────────────────────────── */
