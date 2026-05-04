@@ -46,10 +46,16 @@ export function activatePromoCode(code: string): Promise<PromoCodeCardResponse> 
   return api.post('/api/v1/promotions/activate', { code })
 }
 
+export interface CartItemForDiscount {
+  productId?: number | null
+  qty: number
+  unitPrice: number
+}
+
 export function calculateDiscount(
   orderTotal: number,
   userPromoCardId?: number,
-  productIds?: number[],
+  items?: CartItemForDiscount[],
 ): Promise<CalculateDiscountResponse> {
-  return api.post('/api/v1/promotions/calculate', { orderTotal, userPromoCardId, productIds: productIds ?? [] })
+  return api.post('/api/v1/promotions/calculate', { orderTotal, userPromoCardId, items: items ?? [] })
 }

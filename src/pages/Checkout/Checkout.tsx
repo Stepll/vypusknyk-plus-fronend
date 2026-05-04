@@ -203,10 +203,12 @@ const Checkout = observer(function Checkout() {
   }, [auth.isLoggedIn])
 
   useEffect(() => {
-    const productIds = cart.items
-      .filter(i => i.productId !== null)
-      .map(i => i.productId as number)
-    calculateDiscount(cart.totalPrice, selectedPromoCardId ?? undefined, productIds)
+    const cartItems = cart.items.map(i => ({
+      productId: i.productId ?? null,
+      qty: i.qty,
+      unitPrice: i.price,
+    }))
+    calculateDiscount(cart.totalPrice, selectedPromoCardId ?? undefined, cartItems)
       .then(setDiscountInfo)
       .catch(() => setDiscountInfo(null))
   }, [cart.totalPrice, selectedPromoCardId])
