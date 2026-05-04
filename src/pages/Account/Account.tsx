@@ -100,7 +100,7 @@ const Account = observer(function Account() {
   }
 
   async function handleSaveProfile() {
-    await auth.updateProfile(fullName, phone)
+    await auth.updateProfile(fullName, phone.replace(/\s/g, ''))
     toast.show('Профіль оновлено')
   }
 
