@@ -8,6 +8,7 @@ import {
   getPromotions, getMyPromoCards, activatePromoCode,
   type PublicPromotionResponse, type PromoCodeCardResponse,
 } from '../../api/promotions'
+import { getTasks, type PublicTaskResponse } from '../../api/tasks'
 import './Promotions.css'
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
@@ -176,12 +177,87 @@ function PromotionCard({ promo, index }: { promo: PublicPromotionResponse; index
   )
 }
 
+// ─── TaskCard ─────────────────────────────────────────────────────────────────
+
+function TaskCard({ task, index }: { task: PublicTaskResponse; index: number }) {
+  const color = task.rewardCardColor
+  const progress = task.userProgress ?? 0
+  const pct = task.targetValue > 0 ? Math.min(100, (progress / task.targetValue) * 100) : 0
+  const hasProgress = task.userProgress !== undefined && task.userProgress !== null
+
+  return (
+    <motion.div
+      className={`task-card ${task.isCompleted ? 'task-card--done' : ''}`}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.08 }}
+    >
+      <div className="task-card__reward" style={{ '--task-color': color } as React.CSSProperties}>
+        <div className="task-card__reward-dot" />
+        <span className="task-card__reward-name">{task.rewardDisplayName}</span>
+        <span className="task-card__reward-discount">
+          {task.rewardDiscountType === 'Percentage'
+            ? `${task.rewardDiscountValue}%`
+            : `${task.rewardDiscountValue} ₴`}
+        </span>
+      </div>
+
+      <div className="task-card__name">{task.name}</div>
+
+      {task.description && (
+        <div className="task-card__desc">{task.description}</div>
+      )}
+
+      {task.targetCategoryName && (
+        <div className="task-card__meta">Категорія: {task.targetCategoryName}</div>
+      )}
+
+      {task.endsAt && (
+        <div className="task-card__meta task-card__meta--deadline">
+          До {formatDate(task.endsAt)}
+        </div>
+      )}
+
+      {task.isCompleted ? (
+        <div className="task-card__completed">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="8" fill="#16a34a" />
+            <path d="M5 9l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Завдання виконано!
+        </div>
+      ) : hasProgress ? (
+        <div className="task-card__progress">
+          <div className="task-card__progress-bar">
+            <div className="task-card__progress-fill" style={{ width: `${pct}%`, background: color }} />
+          </div>
+          <div className="task-card__progress-label">
+            {progress} / {task.targetValue}
+          </div>
+        </div>
+      ) : null}
+    </motion.div>
+  )
+}
+
+function IconNoTasks() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="10" width="40" height="36" rx="5" stroke="#d1d5db" strokeWidth="2" fill="#f9fafb"/>
+      <path d="M16 22h24M16 30h16M16 38h10" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="42" cy="42" r="8" fill="#fdf2f8" stroke="#e91e8c" strokeWidth="1.5"/>
+      <path d="M39.5 42l2 2 3-3" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const Promotions = observer(function Promotions() {
   const { auth } = useRootStore()
   const [promotions, setPromotions] = useState<PublicPromotionResponse[]>([])
   const [cards, setCards] = useState<PromoCodeCardResponse[]>([])
+  const [tasks, setTasks] = useState<PublicTaskResponse[]>([])
   const [code, setCode] = useState('')
   const [activating, setActivating] = useState(false)
   const [loadingCards, setLoadingCards] = useState(false)
@@ -189,12 +265,14 @@ const Promotions = observer(function Promotions() {
 
   useEffect(() => {
     getPromotions().then(setPromotions).catch(() => {})
+    getTasks().then(setTasks).catch(() => {})
   }, [])
 
   useEffect(() => {
     if (!auth.isLoggedIn) return
     setLoadingCards(true)
     getMyPromoCards().then(setCards).catch(() => {}).finally(() => setLoadingCards(false))
+    getTasks().then(setTasks).catch(() => {})
   }, [auth.isLoggedIn])
 
   const handleActivate = async () => {
@@ -286,6 +364,33 @@ const Promotions = observer(function Promotions() {
           )}
         </div>
       </section>
+
+      {/* ── Tasks ── */}
+      {tasks.length > 0 && (
+        <section className="promo-section">
+          <div className="promo-section__inner">
+            <div className="promo-section__header">
+              <h2 className="promo-section__title">Завдання</h2>
+              <p className="promo-section__subtitle">
+                Виконуй умови та отримуй промокоди автоматично
+              </p>
+            </div>
+
+            {tasks.length === 0 ? (
+              <div className="promo-empty">
+                <span className="promo-empty__icon"><IconNoTasks /></span>
+                <p>Зараз немає активних завдань</p>
+              </div>
+            ) : (
+              <div className="task-cards-grid">
+                {tasks.map((task, i) => (
+                  <TaskCard key={task.id} task={task} index={i} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── Activate code + My cards ── */}
       <section className="promo-section promo-section--dark" ref={cardsRef}>

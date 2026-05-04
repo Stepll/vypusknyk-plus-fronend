@@ -429,6 +429,127 @@
   justify-content: center;
 }
 
+/* ─── Task cards ──────────────────────────────────────────────── */
+
+.task-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.task-card {
+  background: #fff;
+  border: 1.5px solid #f3f4f6;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+}
+
+.task-card--done {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.task-card__reward {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-card__reward-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--task-color);
+  flex-shrink: 0;
+}
+
+.task-card__reward-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-card__reward-discount {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--task-color);
+  background: color-mix(in srgb, var(--task-color) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.task-card__name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.3;
+}
+
+.task-card__desc {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.task-card__meta {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.task-card__meta--deadline {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.task-card__progress {
+  margin-top: 4px;
+}
+
+.task-card__progress-bar {
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.task-card__progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.task-card__progress-label {
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: right;
+}
+
+.task-card__completed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #16a34a;
+  margin-top: 4px;
+}
+
 /* ─── Responsive ──────────────────────────────────────────────── */
 
 @media (max-width: 600px) {
@@ -437,7 +558,8 @@
   }
 
   .promo-cards-grid,
-  .promo-tickets-grid {
+  .promo-tickets-grid,
+  .task-cards-grid {
     grid-template-columns: 1fr;
   }
 
