@@ -206,7 +206,7 @@ const Checkout = observer(function Checkout() {
     const cartItems = cart.items.map(i => ({
       productId: i.productId ?? null,
       qty: i.qty,
-      unitPrice: i.price,
+      unitPrice: cartItemTotal(i) / i.qty,
     }))
     calculateDiscount(cart.totalPrice, selectedPromoCardId ?? undefined, cartItems)
       .then(setDiscountInfo)
