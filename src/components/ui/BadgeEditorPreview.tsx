@@ -5,49 +5,53 @@ const CANVAS_SIZE = 320
 const CX = CANVAS_SIZE / 2
 const CY = CANVAS_SIZE / 2
 const BADGE_RADIUS = 148
-const TEXT_R = BADGE_RADIUS - 15
 
 function drawArcText(
   ctx: CanvasRenderingContext2D,
   text: string,
   pos: 'top' | 'bottom',
+  fontSize: number,
+  fontFamily: string,
+  textColor: string,
 ) {
-  const fontSize = 13
+  // Text sits just inside the badge edge
+  const r = BADGE_RADIUS - fontSize / 2 - 4
+
   ctx.save()
-  ctx.font = `bold ${fontSize}px Arial, sans-serif`
-  ctx.fillStyle = '#1a1a2e'
+  ctx.font = `bold ${fontSize}px ${fontFamily}`
+  ctx.fillStyle = textColor
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
 
   const chars = text.split('')
   let totalWidth = 0
   chars.forEach(ch => { totalWidth += ctx.measureText(ch).width })
-  const totalAngle = totalWidth / TEXT_R
+  const totalAngle = totalWidth / r
 
   ctx.translate(CX, CY)
 
   if (pos === 'top') {
-    // Clockwise, centered at top (−π/2)
+    // Clockwise at top — readable left-to-right from outside
     let angle = -Math.PI / 2 - totalAngle / 2
     for (const ch of chars) {
-      const ca = ctx.measureText(ch).width / TEXT_R
+      const ca = ctx.measureText(ch).width / r
       angle += ca / 2
       ctx.save()
       ctx.rotate(angle)
-      ctx.translate(0, -TEXT_R)
+      ctx.translate(0, -r)
       ctx.fillText(ch, 0, 0)
       ctx.restore()
       angle += ca / 2
     }
   } else {
-    // Counter-clockwise, readable, centered at bottom (π/2)
+    // Counter-clockwise at bottom — readable left-to-right from outside
     let angle = Math.PI / 2 + totalAngle / 2
     for (const ch of chars) {
-      const ca = ctx.measureText(ch).width / TEXT_R
+      const ca = ctx.measureText(ch).width / r
       angle -= ca / 2
       ctx.save()
       ctx.rotate(angle)
-      ctx.translate(0, TEXT_R)
+      ctx.translate(0, r)
       ctx.rotate(Math.PI)
       ctx.fillText(ch, 0, 0)
       ctx.restore()
@@ -63,6 +67,9 @@ interface Props {
   photoTransform: BadgePhotoTransform
   topText: string
   bottomText: string
+  textColor: string
+  fontSize: number
+  fontFamily: string
   onTransformChange: (t: BadgePhotoTransform) => void
   previewName: string
   namePosition: 'top' | 'bottom'
@@ -73,14 +80,23 @@ export default function BadgeEditorPreview({
   photoTransform,
   topText,
   bottomText,
+  textColor,
+  fontSize,
+  fontFamily,
   onTransformChange,
   previewName,
   namePosition,
 }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const imgRef    = useRef<HTMLImageElement | null>(null)
-  const dragRef   = useRef<{ sx: number; sy: number; tx0: number; ty0: number } | null>(null)
-  const drawRef   = useRef<(() => void) | null>(null)
+  const canvasRef     = useRef<HTMLCanvasElement>(null)
+  const imgRef        = useRef<HTMLImageElement | null>(null)
+  const dragRef       = useRef<{ sx: number; sy: number; tx0: number; ty0: number } | null>(null)
+  const drawRef       = useRef<(() => void) | null>(null)
+  const transformRef  = useRef(photoTransform)
+  const photoUrlRef   = useRef(photoUrl)
+
+  // Keep refs in sync so wheel handler always has fresh values
+  useEffect(() => { transformRef.current  = photoTransform }, [photoTransform])
+  useEffect(() => { photoUrlRef.current   = photoUrl },       [photoUrl])
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -90,7 +106,7 @@ export default function BadgeEditorPreview({
 
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
 
-    // 1. White circle background
+    // 1. Background circle
     ctx.save()
     ctx.beginPath()
     ctx.arc(CX, CY, BADGE_RADIUS, 0, Math.PI * 2)
@@ -118,14 +134,14 @@ export default function BadgeEditorPreview({
       ctx.rotate((rotation * Math.PI) / 180)
       ctx.drawImage(
         img,
-        (-img.naturalWidth * fitScale) / 2,
+        (-img.naturalWidth  * fitScale) / 2,
         (-img.naturalHeight * fitScale) / 2,
-        img.naturalWidth * fitScale,
+        img.naturalWidth  * fitScale,
         img.naturalHeight * fitScale,
       )
       ctx.restore()
     } else {
-      // Placeholder — icon + hint text
+      // Placeholder
       ctx.save()
       ctx.beginPath()
       ctx.arc(CX, CY, BADGE_RADIUS, 0, Math.PI * 2)
@@ -141,7 +157,7 @@ export default function BadgeEditorPreview({
       ctx.restore()
     }
 
-    // 3. Badge boundary overlay (dashed circle)
+    // 3. Badge boundary overlay
     ctx.save()
     ctx.beginPath()
     ctx.arc(CX, CY, BADGE_RADIUS - 1, 0, Math.PI * 2)
@@ -155,14 +171,13 @@ export default function BadgeEditorPreview({
     const displayTop    = previewName && namePosition === 'top'    ? previewName : topText
     const displayBottom = previewName && namePosition === 'bottom' ? previewName : bottomText
 
-    if (displayTop)    drawArcText(ctx, displayTop,    'top')
-    if (displayBottom) drawArcText(ctx, displayBottom, 'bottom')
-  }, [photoTransform, topText, bottomText, previewName, namePosition])
+    if (displayTop)    drawArcText(ctx, displayTop,    'top',    fontSize, fontFamily, textColor)
+    if (displayBottom) drawArcText(ctx, displayBottom, 'bottom', fontSize, fontFamily, textColor)
+  }, [photoTransform, topText, bottomText, textColor, fontSize, fontFamily, previewName, namePosition])
 
-  // Keep ref current so image onload can call latest draw
   useEffect(() => { drawRef.current = draw }, [draw])
 
-  // Load image when photoUrl changes
+  // Load image
   useEffect(() => {
     if (!photoUrl) {
       imgRef.current = null
@@ -170,17 +185,34 @@ export default function BadgeEditorPreview({
       return
     }
     const img = new Image()
-    img.onload = () => {
-      imgRef.current = img
-      drawRef.current?.()
-    }
+    img.onload = () => { imgRef.current = img; drawRef.current?.() }
     img.src = photoUrl
   }, [photoUrl])
 
-  // Redraw when any visual prop changes
+  // Redraw on state change
   useEffect(() => { draw() }, [draw])
 
-  // ── Interaction ────────────────────────────────────────────────────────────
+  // Non-passive wheel listener to prevent page scroll on zoom
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    function onWheel(e: WheelEvent) {
+      if (!photoUrlRef.current) return
+      e.preventDefault()
+      const delta = e.deltaY < 0 ? 0.1 : -0.1
+      const t = transformRef.current
+      onTransformChange({
+        ...t,
+        scale: Math.max(0.3, Math.min(8, t.scale + delta)),
+      })
+    }
+
+    canvas.addEventListener('wheel', onWheel, { passive: false })
+    return () => canvas.removeEventListener('wheel', onWheel)
+  }, [onTransformChange])
+
+  // ── Mouse drag ─────────────────────────────────────────────────────────────
 
   function handleMouseDown(e: React.MouseEvent) {
     if (!photoUrl) return
@@ -201,21 +233,7 @@ export default function BadgeEditorPreview({
     })
   }
 
-  function handleMouseUp() {
-    dragRef.current = null
-  }
-
-  function handleWheel(e: React.WheelEvent) {
-    if (!photoUrl) return
-    e.preventDefault()
-    const delta = e.deltaY < 0 ? 0.1 : -0.1
-    onTransformChange({
-      ...photoTransform,
-      scale: Math.max(0.3, Math.min(8, photoTransform.scale + delta)),
-    })
-  }
-
-  const isDragging = dragRef.current !== null
+  function handleMouseUp() { dragRef.current = null }
 
   return (
     <canvas
@@ -225,7 +243,7 @@ export default function BadgeEditorPreview({
       style={{
         display: 'block',
         borderRadius: '50%',
-        cursor: !photoUrl ? 'default' : isDragging ? 'grabbing' : 'grab',
+        cursor: !photoUrl ? 'default' : dragRef.current ? 'grabbing' : 'grab',
         boxShadow: '0 4px 24px rgba(0,0,0,0.13)',
         userSelect: 'none',
       }}
@@ -233,7 +251,6 @@ export default function BadgeEditorPreview({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
     />
   )
 }

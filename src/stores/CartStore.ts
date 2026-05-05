@@ -24,6 +24,10 @@ export interface BadgeCustomization {
   bottomText: string
   photoUrl: string | null
   photoTransform: { scale: number; x: number; y: number; rotation: number }
+  textColorId: number
+  textColorHex: string
+  fontSize: number
+  fontSlug: string
   comment: string
   designName: string
   namesCount: number

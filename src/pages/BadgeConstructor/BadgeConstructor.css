@@ -363,6 +363,78 @@
 
 .bc-names-btn--active .bc-names-btn__arrow { color: #e91e8c; }
 
+/* ── Color swatches ──────────────────────────────────────────────────────── */
+
+.bc-color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.bc-color-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: border-color 0.15s;
+}
+
+.bc-color-swatch--active { border-color: #e91e8c; }
+
+.bc-color-swatch:hover:not(.bc-color-swatch--active) { border-color: #d1d5db; }
+
+.bc-color-swatch__dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: block;
+}
+
+/* ── Font chips ───────────────────────────────────────────────────────────── */
+
+.bc-font-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.bc-font-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 72px;
+}
+
+.bc-font-chip:hover { border-color: #e91e8c; }
+
+.bc-font-chip--active {
+  border-color: #e91e8c;
+  background: #fce7f3;
+}
+
+.bc-font-chip__preview {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1;
+}
+
+.bc-font-chip--active .bc-font-chip__preview { color: #e91e8c; }
+
+.bc-font-chip__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  font-family: system-ui, sans-serif !important;
+}
+
+.bc-font-chip--active .bc-font-chip__label { color: #e91e8c; }
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
