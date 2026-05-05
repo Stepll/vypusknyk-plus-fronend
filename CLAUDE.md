@@ -125,6 +125,10 @@ src/
     VerifyEmail/                   # /verify-email?token= — підтвердження email (рожевий градієнт, framer-motion)
     OrderSuccess/                  # /order-success
     ProductPage/                   # /catalog/:id
+    Promotions/                    # /promotions — Акції + Мої промокоди + Завдання
+    │                              # TaskCard: reward (кольор.крапка+назва+знижка), прогрес-бар, deadline, isCompleted
+    │                              # PromoTicket: 3D tilt-карта з framer-motion (rotateX/Y через useMotionValue)
+    │                              # phone у Account.tsx: .replace(/\s/g, '') перед save (formatPhone додає пробіли для UI)
     RibbonConstructor/             # /constructor/ribbon
 
   components/
@@ -158,6 +162,9 @@ src/
     products.ts     # getProducts, getProduct
     categories.ts   # getProductCategories() → GET /api/v1/product-categories (ProductCategoryResponse[])
     designs.ts             # fetchDesigns, createDesign, updateDesign, deleteDesign
+    promotions.ts          # getPromotions, getMyPromoCards, activatePromoCode, calculateDiscount
+    │                      # CartItemForDiscount: { productId?, qty, unitPrice } — unitPrice = cartItemTotal(i)/i.qty
+    tasks.ts               # getTasks() → GET /api/v1/tasks; PublicTaskResponse (з userProgress?, isCompleted)
     ribbon-print-types.ts  # getRibbonPrintTypes() → GET /api/v1/ribbon-print-types
     ribbon-emblems.ts      # getRibbonEmblems() → GET /api/v1/ribbon-emblems
     constructor-rules.ts   # getConstructorRules() → GET /api/v1/constructor/rules → ConstructorRulesResponse
