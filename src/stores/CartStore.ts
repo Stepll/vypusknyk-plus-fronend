@@ -17,6 +17,19 @@ export interface RibbonCustomization {
   designName: string
 }
 
+export interface BadgeCustomization {
+  sizeId: number
+  sizeLabel: string
+  topText: string
+  bottomText: string
+  photoUrl: string | null
+  photoTransform: { scale: number; x: number; y: number; rotation: number }
+  comment: string
+  designName: string
+  namesCount: number
+  namesTextPosition: 'top' | 'bottom'
+}
+
 export interface CartItem {
   id: string            // unique per addition (uuid-like)
   productId: number | null
@@ -27,6 +40,7 @@ export interface CartItem {
   qty: number
   namesData: NamesData | null   // null = no names customization
   ribbonCustomization?: RibbonCustomization  // full config for custom ribbons
+  badgeCustomization?: BadgeCustomization
 }
 
 export function cartItemTotal(item: CartItem): number {

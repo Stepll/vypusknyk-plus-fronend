@@ -42,6 +42,29 @@ function MedalIllustration() {
   )
 }
 
+function BadgeIllustration() {
+  return (
+    <div className="hub-card__illustration hub-card__illustration--badge">
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="50" fill="#fce7f3" />
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#e91e8c" strokeWidth="3" strokeDasharray="8 5" />
+        <circle cx="60" cy="60" r="36" fill="#f9fafb" />
+        {/* Person silhouette */}
+        <circle cx="60" cy="50" r="11" fill="#e91e8c" opacity="0.7" />
+        <path d="M38 82 Q38 66 60 66 Q82 66 82 82" fill="#e91e8c" opacity="0.7" />
+        {/* Top arc text dots */}
+        <circle cx="27" cy="45" r="2.5" fill="#e91e8c" opacity="0.4" />
+        <circle cx="33" cy="31" r="2.5" fill="#e91e8c" opacity="0.4" />
+        <circle cx="45" cy="21" r="2.5" fill="#e91e8c" opacity="0.4" />
+        <circle cx="60" cy="17" r="2.5" fill="#e91e8c" opacity="0.55" />
+        <circle cx="75" cy="21" r="2.5" fill="#e91e8c" opacity="0.4" />
+        <circle cx="87" cy="31" r="2.5" fill="#e91e8c" opacity="0.4" />
+        <circle cx="93" cy="45" r="2.5" fill="#e91e8c" opacity="0.4" />
+      </svg>
+    </div>
+  )
+}
+
 function CertIllustration() {
   return (
     <div className="hub-card__illustration hub-card__illustration--cert">
@@ -94,6 +117,24 @@ export default function ConstructorHub() {
               </div>
               <p className="hub-card__desc">{cms.ribbon.desc}</p>
               <Link to="/constructor/ribbon">
+                <Button type="primary" className="hub-card__btn">Відкрити конструктор</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Badge — full row */}
+        <div className="hub-card hub-card--wide" style={{ marginTop: 24 }}>
+          <div className="hub-card--wide__inner">
+            <BadgeIllustration />
+            <div className="hub-card__body">
+              <div className="hub-card__header">
+                <h2 className="hub-card__title">Значок</h2>
+              </div>
+              <p className="hub-card__desc">
+                Завантажте фото, задайте написи по колу — верхній і нижній. Підтримка іменних значків для цілого класу.
+              </p>
+              <Link to="/constructor/badge">
                 <Button type="primary" className="hub-card__btn">Відкрити конструктор</Button>
               </Link>
             </div>

@@ -1,0 +1,376 @@
+.bc-page {
+  min-height: 100vh;
+  background: #f9fafb;
+  padding-bottom: 80px;
+}
+
+.bc-container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Top band ────────────────────────────────────────────────────────────── */
+
+.bc-top-band {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 60%, #1a1a2e 100%);
+  padding-bottom: 24px;
+}
+
+.bc-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 88px;
+}
+
+.bc-breadcrumbs__link {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.bc-breadcrumbs__link:hover { color: rgba(255, 255, 255, 0.9); }
+
+.bc-breadcrumbs__sep     { font-size: 13px; color: rgba(255, 255, 255, 0.25); }
+.bc-breadcrumbs__current { font-size: 13px; color: rgba(255, 255, 255, 0.85); font-weight: 500; }
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.bc-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 48px;
+  align-items: start;
+  padding-top: 40px;
+}
+
+/* ── Preview column ──────────────────────────────────────────────────────── */
+
+.bc-preview-col {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Design header ───────────────────────────────────────────────────────── */
+
+.bc-design-header {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bc-design-name { flex: 1; min-width: 0; }
+
+.bc-design-header__actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.bc-design-name__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  padding: 2px 6px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  width: 100%;
+  text-align: left;
+}
+
+.bc-design-name__btn:hover { background: #f3f4f6; }
+
+.bc-design-name__edit-icon { font-size: 13px; color: #9ca3af; flex-shrink: 0; }
+
+.bc-design-name__input {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+/* ── Preview card ────────────────────────────────────────────────────────── */
+
+.bc-preview-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: 28px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.bc-preview-canvas-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bc-preview-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── Price card ──────────────────────────────────────────────────────────── */
+
+.bc-price-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.bc-price-card__rows { display: flex; flex-direction: column; gap: 6px; }
+
+.bc-price-card__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.bc-price-card__row span:last-child { font-weight: 600; color: #374151; }
+
+.bc-price-card__divider { height: 1px; background: #e5e7eb; margin: 10px 0; }
+
+.bc-price-card__unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.bc-price-card__unit-price { font-size: 15px; font-weight: 700; color: #374151; }
+
+.bc-price-card__counter {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bc-price-card__counter-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  transition: background 0.12s;
+}
+
+.bc-price-card__counter-btn:hover:not(:disabled) { background: #f3f4f6; }
+
+.bc-price-card__counter-btn:disabled { color: #d1d5db; cursor: not-allowed; }
+
+.bc-price-card__counter-val {
+  min-width: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.bc-price-card__total-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.bc-price-card__eq { color: #9ca3af; }
+
+.bc-price-card__sum {
+  font-size: 18px;
+  font-weight: 800;
+  color: #e91e8c;
+  margin-left: auto;
+}
+
+.bc-order-btn {
+  height: 48px !important;
+  border-radius: 999px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+/* ── Form column ─────────────────────────────────────────────────────────── */
+
+.bc-form-col {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Field ───────────────────────────────────────────────────────────────── */
+
+.bc-field { display: flex; flex-direction: column; gap: 8px; }
+
+.bc-label { font-size: 13px; font-weight: 700; color: #374151; }
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
+
+.bc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #f3f4f6;
+}
+
+.bc-section__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ── Chips ───────────────────────────────────────────────────────────────── */
+
+.bc-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.bc-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.bc-chip:hover { border-color: #e91e8c; color: #e91e8c; }
+
+.bc-chip--active {
+  border-color: #e91e8c;
+  background: #fce7f3;
+  color: #e91e8c;
+}
+
+.bc-chip__mod {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.bc-chip--active .bc-chip__mod { color: #e91e8c; }
+
+/* ── Photo upload ────────────────────────────────────────────────────────── */
+
+.bc-photo-upload {
+  border: 2px dashed #e5e7eb;
+  border-radius: 14px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.bc-photo-upload:hover {
+  border-color: #e91e8c;
+  background: #fdf2f8;
+}
+
+.bc-photo-upload__icon {
+  font-size: 28px;
+  color: #d1d5db;
+}
+
+.bc-photo-upload:hover .bc-photo-upload__icon { color: #e91e8c; }
+
+.bc-photo-upload__text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.bc-photo-upload__hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.bc-photo-actions { display: flex; gap: 8px; }
+
+/* ── Names button ────────────────────────────────────────────────────────── */
+
+.bc-names-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+}
+
+.bc-names-btn:hover { border-color: #e91e8c; background: #fdf2f8; }
+
+.bc-names-btn--active {
+  border-color: #e91e8c;
+  background: #fce7f3;
+  color: #e91e8c;
+}
+
+.bc-names-btn__arrow { margin-left: auto; font-size: 18px; color: #d1d5db; }
+
+.bc-names-btn--active .bc-names-btn__arrow { color: #e91e8c; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .bc-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .bc-preview-col {
+    position: static;
+  }
+}
