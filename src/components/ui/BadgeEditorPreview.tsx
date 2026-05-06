@@ -186,6 +186,7 @@ export default function BadgeEditorPreview({
       return
     }
     const img = new Image()
+    if (!photoUrl.startsWith('data:')) img.crossOrigin = 'anonymous'
     img.onload = () => { imgRef.current = img; drawRef.current?.() }
     img.src = photoUrl
   }, [photoUrl])

@@ -17,13 +17,12 @@ import {
   BADGE_TEXT_COLORS,
   BADGE_FONTS,
   BADGE_FONT_SIZES,
-  BADGE_PRESET_PHOTOS,
-  presetToDataUrl,
   BADGE_BASE_PRICE,
   BADGE_NAMED_EXTRA,
 } from '../../constants/badgeData'
 import { getBadgeSizes } from '../../api/badge-sizes'
-import type { BadgeSizeResponse } from '../../api/types'
+import { getBadgeImages } from '../../api/badge-images'
+import type { BadgeSizeResponse, BadgeImageResponse } from '../../api/types'
 import './BadgeConstructor.css'
 
 const BadgeConstructor = observer(function BadgeConstructor() {
@@ -38,18 +37,19 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   const [previewNameIdx, setPreviewNameIdx] = useState(0)
   const [activePresetId, setActivePresetId] = useState<number | null>(null)
 
-  const [sizes, setSizes]         = useState<BadgeSizeResponse[]>([])
+  const [sizes, setSizes]               = useState<BadgeSizeResponse[]>([])
   const [sizesLoading, setSizesLoading] = useState(true)
+  const [presetImages, setPresetImages] = useState<BadgeImageResponse[]>([])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     getBadgeSizes().then(data => {
       setSizes(data)
-      if (data.length > 0) {
-        setForm(prev => ({ ...prev, sizeId: data[0].id }))
-      }
+      if (data.length > 0) setForm(prev => ({ ...prev, sizeId: data[0].id }))
     }).finally(() => setSizesLoading(false))
+
+    getBadgeImages().then(setPresetImages)
   }, [])
 
   function update(patch: Partial<BadgeState>) {
@@ -95,12 +95,11 @@ const BadgeConstructor = observer(function BadgeConstructor() {
     e.target.value = ''
   }
 
-  function handleSelectPreset(id: number) {
-    const preset = BADGE_PRESET_PHOTOS.find(p => p.id === id)
-    if (!preset) return
-    setActivePresetId(id)
+  function handleSelectPreset(img: BadgeImageResponse) {
+    if (!img.imageUrl) return
+    setActivePresetId(img.id)
     update({
-      photoUrl: presetToDataUrl(preset),
+      photoUrl: img.imageUrl,
       photoTransform: { scale: 1, x: 0, y: 0, rotation: 0 },
     })
   }
@@ -322,28 +321,29 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                 </div>
               )}
 
-              {/* Preset photos */}
-              <div className="bc-presets">
-                <p className="bc-presets__label">Або обрати готове фото</p>
-                <div className="bc-presets__list">
-                  {BADGE_PRESET_PHOTOS.map(preset => (
-                    <Tooltip key={preset.id} title={preset.name}>
-                      <button
-                        className={`bc-preset${activePresetId === preset.id ? ' bc-preset--active' : ''}`}
-                        onClick={() => handleSelectPreset(preset.id)}
-                        aria-label={preset.name}
-                      >
-                        <span
-                          className="bc-preset__thumb"
-                          style={{
-                            background: `linear-gradient(${preset.gradientAngle}deg, ${preset.gradientFrom}, ${preset.gradientTo})`,
-                          }}
-                        />
-                      </button>
-                    </Tooltip>
-                  ))}
+              {/* Preset photos from DB */}
+              {presetImages.length > 0 && (
+                <div className="bc-presets">
+                  <p className="bc-presets__label">Або обрати готове фото</p>
+                  <div className="bc-presets__list">
+                    {presetImages.map(img => (
+                      <Tooltip key={img.id} title={img.name}>
+                        <button
+                          className={`bc-preset${activePresetId === img.id ? ' bc-preset--active' : ''}`}
+                          onClick={() => handleSelectPreset(img)}
+                          aria-label={img.name}
+                          disabled={!img.imageUrl}
+                        >
+                          {img.imageUrl
+                            ? <img src={img.imageUrl} className="bc-preset__thumb" alt={img.name} />
+                            : <span className="bc-preset__thumb" style={{ background: '#e5e7eb' }} />
+                          }
+                        </button>
+                      </Tooltip>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* 3. Rotation — only when photo loaded */}

@@ -107,6 +107,14 @@ export interface RibbonPrintColorResponse {
   sortOrder: number
 }
 
+export interface BadgeImageResponse {
+  id: number
+  name: string
+  imageUrl: string | null
+  isActive: boolean
+  sortOrder: number
+}
+
 export interface BadgeSizeResponse {
   id: number
   name: string
