@@ -45,10 +45,12 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   const [textSizes, setTextSizes]       = useState<BadgeTextSizeResponse[]>([])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const loadedFromDesign = useRef(false)
 
   useEffect(() => {
     const pending = auth.consumePendingBadgeDesign()
     if (pending) {
+      loadedFromDesign.current = true
       setDesignName(pending.designName)
       setForm(pending.state)
     }
@@ -57,24 +59,24 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   useEffect(() => {
     getBadgeSizes().then(data => {
       setSizes(data)
-      if (data.length > 0) setForm(prev => ({ ...prev, sizeId: data[0].id }))
+      if (data.length > 0 && !loadedFromDesign.current) setForm(prev => ({ ...prev, sizeId: data[0].id }))
     }).finally(() => setSizesLoading(false))
 
     getBadgeImages().then(setPresetImages)
 
     getBadgeTextColors().then(data => {
       setTextColors(data)
-      if (data.length > 0) setForm(prev => ({ ...prev, textColorId: data[0].id }))
+      if (data.length > 0 && !loadedFromDesign.current) setForm(prev => ({ ...prev, textColorId: data[0].id }))
     })
 
     getBadgeFonts().then(data => {
       setFonts(data)
-      if (data.length > 0) setForm(prev => ({ ...prev, fontSlug: data[0].slug }))
+      if (data.length > 0 && !loadedFromDesign.current) setForm(prev => ({ ...prev, fontSlug: data[0].slug }))
     })
 
     getBadgeTextSizes().then(data => {
       setTextSizes(data)
-      if (data.length > 0) setForm(prev => ({ ...prev, fontSize: data[0].value }))
+      if (data.length > 0 && !loadedFromDesign.current) setForm(prev => ({ ...prev, fontSize: data[0].value }))
     })
   }, [])
 
