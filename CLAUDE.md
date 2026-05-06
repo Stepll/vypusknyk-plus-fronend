@@ -129,6 +129,11 @@ src/
     │                              # TaskCard: reward (кольор.крапка+назва+знижка), прогрес-бар, deadline, isCompleted
     │                              # PromoTicket: 3D tilt-карта з framer-motion (rotateX/Y через useMotionValue)
     │                              # phone у Account.tsx: .replace(/\s/g, '') перед save (formatPhone додає пробіли для UI)
+    BadgeConstructor/              # /constructor/badge
+    │                              # form: BadgeState (sizeId, photoUrl, photoTransform, topText, bottomText,
+    │                              # textColorId, fontSlug, fontSize, comment)
+    │                              # loadedFromDesign ref — запобігає перезапису налаштувань API-дефолтами
+    │                              # при відкритті через saved designs (consumePendingBadgeDesign)
     RibbonConstructor/             # /constructor/ribbon
 
   components/
@@ -139,6 +144,8 @@ src/
       CartFloat.tsx / CartFloat.css
     ui/
       AnimatedSection.tsx
+      BadgeEditorPreview.tsx / BadgeEditorPreview.css  # Canvas-превью значка з drag/zoom; onTransformChange prop
+      BadgeNamesDrawer.tsx / BadgeNamesDrawer.css       # Drawer для іменних значків (textPosition, names per row)
       CartToast.tsx / CartToast.css
       CountUp.tsx
       NamesDrawer.tsx / NamesDrawer.css
@@ -151,7 +158,11 @@ src/
     AuthStore.ts    # auth, refresh tokens, saved designs (id: number|string — string для optimistic temp IDs)
     │               # AuthUser та AuthResponseDto мають isEmailVerified: boolean (?? false fallback)
     │               # loginWithGoogle(accessToken) → POST /api/v1/auth/google { accessToken }
-    CartStore.ts    # localStorage; productId: number|null (null для кастомних стрічок)
+    │               # SavedBadgeDesign { id, designName, savedAt, state: BadgeState }
+    │               # savedBadgeDesigns[], pendingBadgeDesign — аналог savedDesigns/pendingDesign для значків
+    │               # loadBadgeDesign(design) → pendingBadgeDesign; consumePendingBadgeDesign() → повертає і очищує
+    │               # saveBadgeDesign, removeBadgeDesign — оптимістичні оновлення + API sync
+    CartStore.ts    # localStorage; productId: number|null (null для кастомних стрічок/значків)
     ToastStore.ts
 
   api/
@@ -162,6 +173,12 @@ src/
     products.ts     # getProducts, getProduct
     categories.ts   # getProductCategories() → GET /api/v1/product-categories (ProductCategoryResponse[])
     designs.ts             # fetchDesigns, createDesign, updateDesign, deleteDesign
+    badge-designs.ts       # fetchBadgeDesigns, createBadgeDesign, updateBadgeDesign, deleteBadgeDesign → /api/v1/badge-designs
+    badge-sizes.ts         # getBadgeSizes() → BadgeSizeResponse[] (id, name, priceModifier)
+    badge-images.ts        # getBadgeImages() → BadgeImageResponse[] (id, name, imageUrl)
+    badge-text-colors.ts   # getBadgeTextColors() → BadgeTextColorResponse[] (id, name, hex, priceModifier)
+    badge-fonts.ts         # getBadgeFonts() → BadgeFontResponse[] (id, name, slug, fontFamily)
+    badge-text-sizes.ts    # getBadgeTextSizes() → BadgeTextSizeResponse[] (value, label)
     promotions.ts          # getPromotions, getMyPromoCards, activatePromoCode, calculateDiscount
     │                      # CartItemForDiscount: { productId?, qty, unitPrice } — unitPrice = cartItemTotal(i)/i.qty
     tasks.ts               # getTasks() → GET /api/v1/tasks; PublicTaskResponse (з userProgress?, isCompleted)
@@ -176,6 +193,8 @@ src/
     products.ts     # Мок-дані (замінені реальним API)
     ribbonRules.ts  # RibbonState, типи конструктора; PRINT_TYPES/MATERIALS/FONTS — статичні fallback значення
                     # НЕ містить disabled/isOptionDisabled логіки — правила беруться з API (constructor-rules)
+    badgeData.ts    # BadgeState { sizeId, photoUrl, photoTransform, topText, bottomText, textColorId, fontSlug,
+                    #   fontSize, comment }, DEFAULT_BADGE_STATE, BADGE_BASE_PRICE, BADGE_NAMED_EXTRA
 
   hooks/
     useScrollAnimation.ts
@@ -209,6 +228,14 @@ src/
 - Гостьові сесії: `guestToken` UUID генерується в `api/guest.ts`, зберігається в localStorage
 
 ---
+
+## Конструктор значків (BadgeConstructor)
+
+- `BadgeState` зберігає `textColorId` та `fontSlug` (не hex/fontFamily) — resolved значення є тільки в компоненті
+- `loadedFromDesign` ref (useRef(false)) — виставляється при `consumePendingBadgeDesign()` на mount; всі API-fetch callback пропускають setForm defaults якщо `loadedFromDesign.current === true`. Без цього API defaults перезаписували б збережений дизайн.
+- `activePresetId` відстежує вибраний preset image (щоб підсвітити кнопку) — скидається при upload власного фото
+- Cart item: `badgeCustomization` об'єкт (sizeLabel, topText, bottomText, photoUrl, textColorHex, fontSize, fontSlug, namesCount, namesTextPosition, designName)
+- Кнопки: рожева "Додати до кошика" + tooltip-wrapped "Зберегти" (disabled без логіну)
 
 ## Конструктор стрічок (RibbonConstructor)
 
