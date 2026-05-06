@@ -212,9 +212,9 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                   photoTransform={form.photoTransform}
                   topText={form.topText}
                   bottomText={form.bottomText}
-                  textColor={colorOption.hex}
+                  textColor={colorOption?.hex ?? '#1a1a2e'}
                   fontSize={form.fontSize}
-                  fontFamily={fontOption.fontFamily}
+                  fontFamily={fontOption?.fontFamily ?? 'Arial, sans-serif'}
                   onTransformChange={t => update({ photoTransform: t })}
                   previewName={previewName}
                   namePosition={namesData.textPosition}
