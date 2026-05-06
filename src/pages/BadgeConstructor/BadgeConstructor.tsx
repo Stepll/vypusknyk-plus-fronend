@@ -14,15 +14,15 @@ import BadgeNamesDrawer, {
 import {
   BadgeState,
   DEFAULT_BADGE_STATE,
-  BADGE_TEXT_COLORS,
-  BADGE_FONTS,
-  BADGE_FONT_SIZES,
   BADGE_BASE_PRICE,
   BADGE_NAMED_EXTRA,
 } from '../../constants/badgeData'
 import { getBadgeSizes } from '../../api/badge-sizes'
 import { getBadgeImages } from '../../api/badge-images'
-import type { BadgeSizeResponse, BadgeImageResponse } from '../../api/types'
+import { getBadgeTextColors } from '../../api/badge-text-colors'
+import { getBadgeFonts } from '../../api/badge-fonts'
+import { getBadgeTextSizes } from '../../api/badge-text-sizes'
+import type { BadgeSizeResponse, BadgeImageResponse, BadgeTextColorResponse, BadgeFontResponse, BadgeTextSizeResponse } from '../../api/types'
 import './BadgeConstructor.css'
 
 const BadgeConstructor = observer(function BadgeConstructor() {
@@ -40,6 +40,9 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   const [sizes, setSizes]               = useState<BadgeSizeResponse[]>([])
   const [sizesLoading, setSizesLoading] = useState(true)
   const [presetImages, setPresetImages] = useState<BadgeImageResponse[]>([])
+  const [textColors, setTextColors]     = useState<BadgeTextColorResponse[]>([])
+  const [fonts, setFonts]               = useState<BadgeFontResponse[]>([])
+  const [textSizes, setTextSizes]       = useState<BadgeTextSizeResponse[]>([])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -50,6 +53,21 @@ const BadgeConstructor = observer(function BadgeConstructor() {
     }).finally(() => setSizesLoading(false))
 
     getBadgeImages().then(setPresetImages)
+
+    getBadgeTextColors().then(data => {
+      setTextColors(data)
+      if (data.length > 0) setForm(prev => ({ ...prev, textColorId: data[0].id }))
+    })
+
+    getBadgeFonts().then(data => {
+      setFonts(data)
+      if (data.length > 0) setForm(prev => ({ ...prev, fontSlug: data[0].slug }))
+    })
+
+    getBadgeTextSizes().then(data => {
+      setTextSizes(data)
+      if (data.length > 0) setForm(prev => ({ ...prev, fontSize: data[0].value }))
+    })
   }, [])
 
   function update(patch: Partial<BadgeState>) {
@@ -69,12 +87,12 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   const previewName = namesList.length > 0 ? namesList[previewNameIdx] : ''
 
   // Derived
-  const namedCount   = countBadgeNames(namesData)
-  const sizeOption   = sizes.find(s => s.id === form.sizeId) ?? sizes[0]
-  const colorOption  = BADGE_TEXT_COLORS.find(c => c.id === form.textColorId) ?? BADGE_TEXT_COLORS[0]
-  const fontOption   = BADGE_FONTS.find(f => f.slug === form.fontSlug) ?? BADGE_FONTS[0]
+  const namedCount  = countBadgeNames(namesData)
+  const sizeOption  = sizes.find(s => s.id === form.sizeId) ?? sizes[0]
+  const colorOption = textColors.find(c => c.id === form.textColorId) ?? textColors[0]
+  const fontOption  = fonts.find(f => f.slug === form.fontSlug) ?? fonts[0]
 
-  const pricePerUnit = BADGE_BASE_PRICE + (sizeOption?.priceModifier ?? 0) + colorOption.priceModifier + (namedCount > 0 ? BADGE_NAMED_EXTRA : 0)
+  const pricePerUnit = BADGE_BASE_PRICE + (sizeOption?.priceModifier ?? 0) + (colorOption?.priceModifier ?? 0) + (namedCount > 0 ? BADGE_NAMED_EXTRA : 0)
   const minQty       = Math.max(namedCount, 1)
   const qty          = Math.max(manualQty, minQty)
   const total        = pricePerUnit * qty
@@ -128,7 +146,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
         photoUrl: form.photoUrl,
         photoTransform: form.photoTransform,
         textColorId: form.textColorId,
-        textColorHex: colorOption.hex,
+        textColorHex: colorOption?.hex ?? '#000000',
         fontSize: form.fontSize,
         fontSlug: form.fontSlug,
         comment: form.comment,
@@ -216,10 +234,10 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                   <span>Базова ціна ({sizeOption?.name ?? ''})</span>
                   <span>{BADGE_BASE_PRICE + (sizeOption?.priceModifier ?? 0)} грн</span>
                 </div>
-                {colorOption.priceModifier > 0 && (
+                {(colorOption?.priceModifier ?? 0) > 0 && (
                   <div className="bc-price-card__row">
-                    <span>Колір тексту ({colorOption.name})</span>
-                    <span>+{colorOption.priceModifier} грн</span>
+                    <span>Колір тексту ({colorOption?.name})</span>
+                    <span>+{colorOption?.priceModifier} грн</span>
                   </div>
                 )}
                 {namedCount > 0 && (
@@ -406,62 +424,68 @@ const BadgeConstructor = observer(function BadgeConstructor() {
               <p className="bc-section__title">Стиль тексту</p>
 
               {/* Color */}
-              <div className="bc-field">
-                <label className="bc-label">Колір тексту</label>
-                <div className="bc-color-swatches">
-                  {BADGE_TEXT_COLORS.map(c => (
-                    <Tooltip key={c.id} title={c.name}>
-                      <button
-                        className={`bc-color-swatch${form.textColorId === c.id ? ' bc-color-swatch--active' : ''}`}
-                        onClick={() => update({ textColorId: c.id })}
-                        aria-label={c.name}
-                      >
-                        <span
-                          className="bc-color-swatch__dot"
-                          style={{
-                            background: c.hex,
-                            border: c.hex === '#ffffff' ? '1.5px solid #e5e7eb' : undefined,
-                          }}
-                        />
-                      </button>
-                    </Tooltip>
-                  ))}
+              {textColors.length > 0 && (
+                <div className="bc-field">
+                  <label className="bc-label">Колір тексту</label>
+                  <div className="bc-color-swatches">
+                    {textColors.map(c => (
+                      <Tooltip key={c.id} title={`${c.name}${c.priceModifier > 0 ? ` +${c.priceModifier}₴` : ''}`}>
+                        <button
+                          className={`bc-color-swatch${form.textColorId === c.id ? ' bc-color-swatch--active' : ''}`}
+                          onClick={() => update({ textColorId: c.id })}
+                          aria-label={c.name}
+                        >
+                          <span
+                            className="bc-color-swatch__dot"
+                            style={{
+                              background: c.hex,
+                              border: c.hex.toLowerCase() === '#ffffff' ? '1.5px solid #e5e7eb' : undefined,
+                            }}
+                          />
+                        </button>
+                      </Tooltip>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Font */}
-              <div className="bc-field">
-                <label className="bc-label">Шрифт</label>
-                <div className="bc-font-chips">
-                  {BADGE_FONTS.map(f => (
-                    <button
-                      key={f.slug}
-                      className={`bc-font-chip${form.fontSlug === f.slug ? ' bc-font-chip--active' : ''}`}
-                      onClick={() => update({ fontSlug: f.slug })}
-                      style={{ fontFamily: f.fontFamily }}
-                    >
-                      <span className="bc-font-chip__preview">Аб</span>
-                      <span className="bc-font-chip__label">{f.name}</span>
-                    </button>
-                  ))}
+              {fonts.length > 0 && (
+                <div className="bc-field">
+                  <label className="bc-label">Шрифт</label>
+                  <div className="bc-font-chips">
+                    {fonts.map(f => (
+                      <button
+                        key={f.slug}
+                        className={`bc-font-chip${form.fontSlug === f.slug ? ' bc-font-chip--active' : ''}`}
+                        onClick={() => update({ fontSlug: f.slug })}
+                        style={{ fontFamily: f.fontFamily }}
+                      >
+                        <span className="bc-font-chip__preview">Аб</span>
+                        <span className="bc-font-chip__label">{f.name}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Size */}
-              <div className="bc-field">
-                <label className="bc-label">Розмір тексту</label>
-                <div className="bc-chips">
-                  {BADGE_FONT_SIZES.map(s => (
-                    <button
-                      key={s.value}
-                      className={`bc-chip${form.fontSize === s.value ? ' bc-chip--active' : ''}`}
-                      onClick={() => update({ fontSize: s.value })}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
+              {/* Text size */}
+              {textSizes.length > 0 && (
+                <div className="bc-field">
+                  <label className="bc-label">Розмір тексту</label>
+                  <div className="bc-chips">
+                    {textSizes.map(s => (
+                      <button
+                        key={s.value}
+                        className={`bc-chip${form.fontSize === s.value ? ' bc-chip--active' : ''}`}
+                        onClick={() => update({ fontSize: s.value })}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* 6. Comment */}

@@ -107,6 +107,33 @@ export interface RibbonPrintColorResponse {
   sortOrder: number
 }
 
+export interface BadgeTextColorResponse {
+  id: number
+  name: string
+  hex: string
+  priceModifier: number
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface BadgeFontResponse {
+  id: number
+  name: string
+  slug: string
+  fontFamily: string
+  priceModifier: number
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface BadgeTextSizeResponse {
+  id: number
+  label: string
+  value: number
+  isActive: boolean
+  sortOrder: number
+}
+
 export interface BadgeImageResponse {
   id: number
   name: string
