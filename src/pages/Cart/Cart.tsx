@@ -165,6 +165,33 @@ const Cart = observer(function Cart() {
                     </button>
                   </div>
 
+                  {item.badgeCustomization && (
+                    <div className="cart-item__ribbon-params">
+                      <div className="cart-item__ribbon-params-row">
+                        <span className="cart-item__ribbon-params-label">Розмір:</span>
+                        <span>{item.badgeCustomization.sizeLabel}</span>
+                      </div>
+                      {item.badgeCustomization.topText && (
+                        <div className="cart-item__ribbon-params-row">
+                          <span className="cart-item__ribbon-params-label">Зверху:</span>
+                          <span>{item.badgeCustomization.topText}</span>
+                        </div>
+                      )}
+                      {item.badgeCustomization.bottomText && (
+                        <div className="cart-item__ribbon-params-row">
+                          <span className="cart-item__ribbon-params-label">Знизу:</span>
+                          <span>{item.badgeCustomization.bottomText}</span>
+                        </div>
+                      )}
+                      {item.badgeCustomization.comment && (
+                        <div className="cart-item__ribbon-params-row">
+                          <span className="cart-item__ribbon-params-label">Коментар:</span>
+                          <span>{item.badgeCustomization.comment}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {item.ribbonCustomization && (
                     <div className="cart-item__ribbon-params">
                       <div className="cart-item__ribbon-params-row">

@@ -3,6 +3,7 @@ import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { Input, Button, Tag } from 'antd'
 import { api } from '../../api/client'
 import RibbonEditorPreview from '../../components/ui/RibbonEditorPreview'
+import BadgeEditorPreview from '../../components/ui/BadgeEditorPreview'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { getUserOrders } from '../../api/orders'
@@ -336,7 +337,7 @@ const Account = observer(function Account() {
           )}
 
           {tab === 'designs' && (
-            auth.savedDesigns.length === 0
+            auth.savedDesigns.length === 0 && auth.savedBadgeDesigns.length === 0
               ? <EmptyState text="Поки що тут немає збережених дизайнів" />
               : (
                 <div className="ac-designs">
@@ -406,6 +407,55 @@ const Account = observer(function Account() {
                           <button
                             className="ac-design-card__remove-btn"
                             onClick={() => auth.removeDesign(design.id)}
+                            aria-label="Видалити дизайн"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {auth.savedBadgeDesigns.map(design => (
+                    <div key={`badge-${design.id}`} className="ac-design-card">
+                      <div className="ac-design-card__preview ac-design-card__preview--badge">
+                        <BadgeEditorPreview
+                          photoUrl={design.state.photoUrl}
+                          photoTransform={design.state.photoTransform}
+                          topText={design.state.topText}
+                          bottomText={design.state.bottomText}
+                          textColor="#1a1a2e"
+                          fontSize={design.state.fontSize}
+                          fontFamily="Arial, sans-serif"
+                          onTransformChange={() => {}}
+                          previewName=""
+                          namePosition="top"
+                        />
+                      </div>
+                      <div className="ac-design-card__body">
+                        <div className="ac-design-card__header">
+                          <span className="ac-design-card__name">{design.designName}</span>
+                          <span className="ac-design-card__date">{design.savedAt}</span>
+                        </div>
+                        <div className="ac-design-card__tags">
+                          <span className="ac-design-card__tag">Значок</span>
+                          {design.state.topText && <span className="ac-design-card__tag">{design.state.topText}</span>}
+                          {design.state.bottomText && <span className="ac-design-card__tag">{design.state.bottomText}</span>}
+                        </div>
+                        <div className="ac-design-card__actions">
+                          <Button
+                            type="primary"
+                            className="ac-design-card__open-btn"
+                            onClick={() => {
+                              auth.loadBadgeDesign(design)
+                              navigate('/constructor/badge')
+                            }}
+                          >
+                            Відкрити
+                          </Button>
+                          <button
+                            className="ac-design-card__remove-btn"
+                            onClick={() => auth.removeBadgeDesign(design.id)}
                             aria-label="Видалити дизайн"
                           >
                             ×

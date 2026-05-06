@@ -8,7 +8,14 @@ import {
   updateDesign,
   deleteDesign,
 } from '../api/designs'
-import { DesignResponse } from '../api/types'
+import {
+  fetchBadgeDesigns,
+  createBadgeDesign,
+  updateBadgeDesign,
+  deleteBadgeDesign,
+} from '../api/badge-designs'
+import { DesignResponse, BadgeDesignResponse } from '../api/types'
+import type { BadgeState } from '../constants/badgeData'
 
 interface AuthResponseDto {
   id: number
@@ -36,12 +43,21 @@ export interface SavedDesign {
   state: RibbonState
 }
 
+export interface SavedBadgeDesign {
+  id: number | string
+  designName: string
+  savedAt: string
+  state: BadgeState
+}
+
 class AuthStore {
   user: AuthUser | null = null
   loading = false
   error: string | null = null
   savedDesigns: SavedDesign[] = []
   pendingDesign: SavedDesign | null = null
+  savedBadgeDesigns: SavedBadgeDesign[] = []
+  pendingBadgeDesign: SavedBadgeDesign | null = null
 
   constructor() {
     makeAutoObservable(this)
@@ -51,6 +67,8 @@ class AuthStore {
         this.user = null
         this.savedDesigns = []
         this.pendingDesign = null
+        this.savedBadgeDesigns = []
+        this.pendingBadgeDesign = null
         this.error = null
       })
     })
@@ -67,6 +85,7 @@ class AuthStore {
       try {
         this.user = JSON.parse(userData)
         this.loadDesigns()
+        this.loadBadgeDesigns()
       } catch {
         this.logout()
       }
@@ -103,11 +122,33 @@ class AuthStore {
     }
   }
 
+  private fromBadgeDto(dto: BadgeDesignResponse): SavedBadgeDesign {
+    return {
+      id: dto.id,
+      designName: dto.designName,
+      savedAt: new Date(dto.savedAt).toLocaleDateString('uk-UA', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }),
+      state: dto.state as BadgeState,
+    }
+  }
+
   async loadDesigns(): Promise<void> {
     try {
       const designs = await fetchDesigns()
       runInAction(() => {
         this.savedDesigns = designs.map(d => this.fromDto(d))
+      })
+    } catch { /* ignore */ }
+  }
+
+  async loadBadgeDesigns(): Promise<void> {
+    try {
+      const designs = await fetchBadgeDesigns()
+      runInAction(() => {
+        this.savedBadgeDesigns = designs.map(d => this.fromBadgeDto(d))
       })
     } catch { /* ignore */ }
   }
@@ -124,6 +165,7 @@ class AuthStore {
       })
       this.saveSession(user, dto)
       this.loadDesigns()
+      this.loadBadgeDesigns()
       claimGuestOrders(getGuestToken()).catch(() => {})
     } catch (e) {
       runInAction(() => {
@@ -146,6 +188,7 @@ class AuthStore {
       })
       this.saveSession(user, dto)
       this.loadDesigns()
+      this.loadBadgeDesigns()
       claimGuestOrders(getGuestToken()).catch(() => {})
     } catch (e) {
       runInAction(() => {
@@ -264,10 +307,60 @@ class AuthStore {
     return d
   }
 
+  saveBadgeDesign(designName: string, state: BadgeState): void {
+    const existingIdx = this.savedBadgeDesigns.findIndex(d => d.designName === designName)
+    if (existingIdx >= 0) {
+      const existing = this.savedBadgeDesigns[existingIdx]
+      this.savedBadgeDesigns[existingIdx] = { ...existing, state }
+      updateBadgeDesign(existing.id as number, designName, state)
+        .then(dto => {
+          runInAction(() => {
+            const idx = this.savedBadgeDesigns.findIndex(d => d.id === dto.id)
+            if (idx >= 0) this.savedBadgeDesigns[idx] = this.fromBadgeDto(dto)
+          })
+        })
+        .catch(() => {})
+    } else {
+      const tempId = Math.random().toString(36).slice(2, 9)
+      const design: SavedBadgeDesign = {
+        id: tempId,
+        designName,
+        savedAt: new Date().toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' }),
+        state: { ...state },
+      }
+      this.savedBadgeDesigns.unshift(design)
+      createBadgeDesign(designName, state)
+        .then(dto => {
+          runInAction(() => {
+            const idx = this.savedBadgeDesigns.findIndex(d => d.id === tempId)
+            if (idx >= 0) this.savedBadgeDesigns[idx] = this.fromBadgeDto(dto)
+          })
+        })
+        .catch(() => {})
+    }
+  }
+
+  removeBadgeDesign(id: number | string): void {
+    this.savedBadgeDesigns = this.savedBadgeDesigns.filter(d => d.id !== id)
+    if (typeof id === 'number') deleteBadgeDesign(id).catch(() => {})
+  }
+
+  loadBadgeDesign(design: SavedBadgeDesign): void {
+    this.pendingBadgeDesign = design
+  }
+
+  consumePendingBadgeDesign(): SavedBadgeDesign | null {
+    const d = this.pendingBadgeDesign
+    this.pendingBadgeDesign = null
+    return d
+  }
+
   logout(): void {
     this.user = null
     this.savedDesigns = []
     this.pendingDesign = null
+    this.savedBadgeDesigns = []
+    this.pendingBadgeDesign = null
     this.error = null
     setToken(null)
     setRefreshToken(null)

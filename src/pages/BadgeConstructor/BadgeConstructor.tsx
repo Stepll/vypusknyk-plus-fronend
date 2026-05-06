@@ -47,6 +47,14 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    const pending = auth.consumePendingBadgeDesign()
+    if (pending) {
+      setDesignName(pending.designName)
+      setForm(pending.state)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
     getBadgeSizes().then(data => {
       setSizes(data)
       if (data.length > 0) setForm(prev => ({ ...prev, sizeId: data[0].id }))
@@ -123,10 +131,8 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   }
 
   function handleSave() {
-    if (!auth.isLoggedIn) {
-      toast.show("Увійдіть, щоб зберігати дизайни")
-      return
-    }
+    if (!auth.isLoggedIn) return
+    auth.saveBadgeDesign(designName, form)
     toast.show(`Дизайн "${designName}" збережено`)
   }
 
@@ -201,7 +207,24 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                 )}
               </div>
               <div className="bc-design-header__actions">
-                <Button size="small" onClick={handleSave}>Зберегти</Button>
+                <Button
+                  type="primary"
+                  size="small"
+                  className="bc-actions__cart-btn"
+                  onClick={handleAddToCart}
+                >
+                  Додати до кошика
+                </Button>
+                <Tooltip title={auth.isLoggedIn ? undefined : 'Увійдіть, щоб зберегти'}>
+                  <Button
+                    size="small"
+                    className="bc-actions__save-btn"
+                    disabled={!auth.isLoggedIn}
+                    onClick={handleSave}
+                  >
+                    Зберегти
+                  </Button>
+                </Tooltip>
               </div>
             </div>
 
@@ -277,10 +300,10 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                 type="primary"
                 size="large"
                 block
-                className="bc-order-btn"
+                className="bc-order-btn bc-order-btn--pink"
                 onClick={handleAddToCart}
               >
-                Замовити
+                Додати до кошика
               </Button>
             </div>
           </div>

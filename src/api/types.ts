@@ -213,6 +213,13 @@ export interface DesignResponse {
   state: unknown
 }
 
+export interface BadgeDesignResponse {
+  id: number
+  designName: string
+  savedAt: string
+  state: unknown
+}
+
 export interface ConstructorIncompatibilityResponse {
   id: number
   typeA: string

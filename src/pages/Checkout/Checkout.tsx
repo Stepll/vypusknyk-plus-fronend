@@ -421,6 +421,13 @@ const Checkout = observer(function Checkout() {
                     <span className="co-sidebar__item-price">{cartItemTotal(item)} грн</span>
                   </div>
                   <span className="co-sidebar__item-qty">{item.qty} шт × {item.basePrice} грн</span>
+                  {item.badgeCustomization && (
+                    <div className="co-sidebar__ribbon-params">
+                      <span>{item.badgeCustomization.sizeLabel}</span>
+                      {item.badgeCustomization.topText && <span>{item.badgeCustomization.topText}</span>}
+                      {item.badgeCustomization.bottomText && <span>{item.badgeCustomization.bottomText}</span>}
+                    </div>
+                  )}
                   {item.ribbonCustomization && (
                     <div className="co-sidebar__ribbon-params">
                       <span>{COLOR_LABELS[item.ribbonCustomization.color] ?? item.ribbonCustomization.color}</span>

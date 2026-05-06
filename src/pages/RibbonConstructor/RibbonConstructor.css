@@ -551,8 +551,15 @@
   font-weight: 600 !important;
   font-size: 13px !important;
   border-color: #e5e7eb !important;
-  color: #9ca3af !important;
   padding: 0 16px !important;
+}
+
+.rc-actions__save-btn:not(:disabled) {
+  color: #374151 !important;
+}
+
+.rc-actions__save-btn:disabled {
+  color: #9ca3af !important;
 }
 
 /* ── Bottom add-to-cart button in form column ────────────────────────────── */

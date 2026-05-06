@@ -72,6 +72,28 @@
 
 .bc-design-header__actions { display: flex; gap: 8px; flex-shrink: 0; }
 
+.bc-actions__cart-btn.ant-btn {
+  background: #e91e8c !important;
+  border-color: #e91e8c !important;
+  border-radius: 999px !important;
+  height: 32px !important;
+  font-weight: 600 !important;
+}
+
+.bc-actions__save-btn.ant-btn {
+  border-radius: 999px !important;
+  height: 32px !important;
+  border-color: #e5e7eb !important;
+}
+
+.bc-actions__save-btn.ant-btn:not(:disabled) {
+  color: #374151 !important;
+}
+
+.bc-actions__save-btn.ant-btn:disabled {
+  color: #9ca3af !important;
+}
+
 .bc-design-name__btn {
   display: flex;
   align-items: center;
@@ -215,6 +237,11 @@
   border-radius: 999px !important;
   font-size: 15px !important;
   font-weight: 700 !important;
+}
+
+.bc-order-btn--pink.ant-btn {
+  background: #e91e8c !important;
+  border-color: #e91e8c !important;
 }
 
 /* ── Form column ─────────────────────────────────────────────────────────── */
