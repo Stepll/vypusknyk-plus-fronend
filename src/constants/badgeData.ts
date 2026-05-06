@@ -54,6 +54,39 @@ export const BADGE_FONT_SIZES: BadgeFontSizeOption[] = [
   { label: 'XL', value: 20 },
 ]
 
+export interface BadgePresetPhoto {
+  id: number
+  name: string
+  gradientFrom: string
+  gradientTo: string
+  gradientAngle: number   // degrees
+  imageUrl: string | null  // future: MinIO URL from admin
+}
+
+export const BADGE_PRESET_PHOTOS: BadgePresetPhoto[] = [
+  { id: 1, name: 'Рожевий захід',  gradientFrom: '#f9a8d4', gradientTo: '#9333ea', gradientAngle: 135, imageUrl: null },
+  { id: 2, name: 'Синє небо',      gradientFrom: '#7dd3fc', gradientTo: '#1d4ed8', gradientAngle: 160, imageUrl: null },
+  { id: 3, name: 'Золотий захід',  gradientFrom: '#fde68a', gradientTo: '#dc2626', gradientAngle: 120, imageUrl: null },
+]
+
+export function presetToDataUrl(preset: BadgePresetPhoto, size = 600): string {
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  const rad = (preset.gradientAngle * Math.PI) / 180
+  const x0 = size / 2 - Math.cos(rad) * size / 2
+  const y0 = size / 2 - Math.sin(rad) * size / 2
+  const x1 = size / 2 + Math.cos(rad) * size / 2
+  const y1 = size / 2 + Math.sin(rad) * size / 2
+  const grad = ctx.createLinearGradient(x0, y0, x1, y1)
+  grad.addColorStop(0, preset.gradientFrom)
+  grad.addColorStop(1, preset.gradientTo)
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, size, size)
+  return canvas.toDataURL('image/png')
+}
+
 export interface BadgePhotoTransform {
   scale: number
   x: number

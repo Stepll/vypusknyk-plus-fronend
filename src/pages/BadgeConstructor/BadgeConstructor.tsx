@@ -18,6 +18,8 @@ import {
   BADGE_TEXT_COLORS,
   BADGE_FONTS,
   BADGE_FONT_SIZES,
+  BADGE_PRESET_PHOTOS,
+  presetToDataUrl,
   BADGE_BASE_PRICE,
   BADGE_NAMED_EXTRA,
 } from '../../constants/badgeData'
@@ -33,6 +35,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   const [namesData, setNamesData]     = useState<BadgeNamesData>(EMPTY_BADGE_NAMES)
   const [manualQty, setManualQty]     = useState(1)
   const [previewNameIdx, setPreviewNameIdx] = useState(0)
+  const [activePresetId, setActivePresetId] = useState<number | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -69,6 +72,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
     if (!file) return
     const reader = new FileReader()
     reader.onload = ev => {
+      setActivePresetId(null)
       update({
         photoUrl: ev.target?.result as string,
         photoTransform: { scale: 1, x: 0, y: 0, rotation: 0 },
@@ -76,6 +80,16 @@ const BadgeConstructor = observer(function BadgeConstructor() {
     }
     reader.readAsDataURL(file)
     e.target.value = ''
+  }
+
+  function handleSelectPreset(id: number) {
+    const preset = BADGE_PRESET_PHOTOS.find(p => p.id === id)
+    if (!preset) return
+    setActivePresetId(id)
+    update({
+      photoUrl: presetToDataUrl(preset),
+      photoTransform: { scale: 1, x: 0, y: 0, rotation: 0 },
+    })
   }
 
   function handleSave() {
@@ -278,7 +292,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                   </Button>
                   <Button
                     danger
-                    onClick={() => update({ photoUrl: null, photoTransform: { scale: 1, x: 0, y: 0, rotation: 0 } })}
+                    onClick={() => { setActivePresetId(null); update({ photoUrl: null, photoTransform: { scale: 1, x: 0, y: 0, rotation: 0 } }) }}
                   >
                     Видалити
                   </Button>
@@ -290,6 +304,29 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                   <p className="bc-photo-upload__hint">JPG, PNG, WebP · до 10 МБ</p>
                 </div>
               )}
+
+              {/* Preset photos */}
+              <div className="bc-presets">
+                <p className="bc-presets__label">Або обрати готове фото</p>
+                <div className="bc-presets__list">
+                  {BADGE_PRESET_PHOTOS.map(preset => (
+                    <Tooltip key={preset.id} title={preset.name}>
+                      <button
+                        className={`bc-preset${activePresetId === preset.id ? ' bc-preset--active' : ''}`}
+                        onClick={() => handleSelectPreset(preset.id)}
+                        aria-label={preset.name}
+                      >
+                        <span
+                          className="bc-preset__thumb"
+                          style={{
+                            background: `linear-gradient(${preset.gradientAngle}deg, ${preset.gradientFrom}, ${preset.gradientTo})`,
+                          }}
+                        />
+                      </button>
+                    </Tooltip>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* 3. Rotation — only when photo loaded */}

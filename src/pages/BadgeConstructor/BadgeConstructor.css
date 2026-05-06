@@ -332,6 +332,46 @@
 
 .bc-photo-actions { display: flex; gap: 8px; }
 
+/* ── Preset photos ───────────────────────────────────────────────────────── */
+
+.bc-presets { margin-top: 12px; }
+
+.bc-presets__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.bc-presets__list { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.bc-preset {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bc-preset:hover { transform: scale(1.08); border-color: #d1d5db; }
+
+.bc-preset--active { border-color: #e91e8c; }
+
+.bc-preset__thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: block;
+}
+
 /* ── Names button ────────────────────────────────────────────────────────── */
 
 .bc-names-btn {
