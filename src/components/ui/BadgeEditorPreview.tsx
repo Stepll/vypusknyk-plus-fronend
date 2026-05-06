@@ -31,8 +31,8 @@ function drawArcText(
   ctx.translate(CX, CY)
 
   if (pos === 'top') {
-    // Clockwise at top — readable left-to-right from outside
-    let angle = -Math.PI / 2 - totalAngle / 2
+    // Clockwise at top — rotate(θ)+translate(0,-r): θ=0 → top (12 o'clock)
+    let angle = -totalAngle / 2
     for (const ch of chars) {
       const ca = ctx.measureText(ch).width / r
       angle += ca / 2
@@ -44,14 +44,15 @@ function drawArcText(
       angle += ca / 2
     }
   } else {
-    // Counter-clockwise at bottom — readable left-to-right from outside
-    let angle = Math.PI / 2 + totalAngle / 2
+    // Counter-clockwise at bottom — θ=π → bottom (6 o'clock)
+    // Decreasing angle = counter-clockwise = left-to-right when reading from outside
+    let angle = Math.PI + totalAngle / 2
     for (const ch of chars) {
       const ca = ctx.measureText(ch).width / r
       angle -= ca / 2
       ctx.save()
       ctx.rotate(angle)
-      ctx.translate(0, r)
+      ctx.translate(0, -r)
       ctx.rotate(Math.PI)
       ctx.fillText(ch, 0, 0)
       ctx.restore()
