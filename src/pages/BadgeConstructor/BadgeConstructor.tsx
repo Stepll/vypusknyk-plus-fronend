@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, Input, Slider, Tooltip } from 'antd'
+import { Button, Input, Slider, Tooltip, Spin } from 'antd'
 import { observer } from 'mobx-react-lite'
 import { EditOutlined, UploadOutlined, UserOutlined, RotateRightOutlined } from '@ant-design/icons'
 import { useRootStore } from '../../stores/RootStore'
@@ -14,7 +14,6 @@ import BadgeNamesDrawer, {
 import {
   BadgeState,
   DEFAULT_BADGE_STATE,
-  BADGE_SIZES,
   BADGE_TEXT_COLORS,
   BADGE_FONTS,
   BADGE_FONT_SIZES,
@@ -23,6 +22,8 @@ import {
   BADGE_BASE_PRICE,
   BADGE_NAMED_EXTRA,
 } from '../../constants/badgeData'
+import { getBadgeSizes } from '../../api/badge-sizes'
+import type { BadgeSizeResponse } from '../../api/types'
 import './BadgeConstructor.css'
 
 const BadgeConstructor = observer(function BadgeConstructor() {
@@ -37,7 +38,19 @@ const BadgeConstructor = observer(function BadgeConstructor() {
   const [previewNameIdx, setPreviewNameIdx] = useState(0)
   const [activePresetId, setActivePresetId] = useState<number | null>(null)
 
+  const [sizes, setSizes]         = useState<BadgeSizeResponse[]>([])
+  const [sizesLoading, setSizesLoading] = useState(true)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    getBadgeSizes().then(data => {
+      setSizes(data)
+      if (data.length > 0) {
+        setForm(prev => ({ ...prev, sizeId: data[0].id }))
+      }
+    }).finally(() => setSizesLoading(false))
+  }, [])
 
   function update(patch: Partial<BadgeState>) {
     setForm(prev => ({ ...prev, ...patch }))
@@ -57,11 +70,11 @@ const BadgeConstructor = observer(function BadgeConstructor() {
 
   // Derived
   const namedCount   = countBadgeNames(namesData)
-  const sizeOption   = BADGE_SIZES.find(s => s.id === form.sizeId) ?? BADGE_SIZES[1]
+  const sizeOption   = sizes.find(s => s.id === form.sizeId) ?? sizes[0]
   const colorOption  = BADGE_TEXT_COLORS.find(c => c.id === form.textColorId) ?? BADGE_TEXT_COLORS[0]
   const fontOption   = BADGE_FONTS.find(f => f.slug === form.fontSlug) ?? BADGE_FONTS[0]
 
-  const pricePerUnit = BADGE_BASE_PRICE + sizeOption.priceModifier + colorOption.priceModifier + (namedCount > 0 ? BADGE_NAMED_EXTRA : 0)
+  const pricePerUnit = BADGE_BASE_PRICE + (sizeOption?.priceModifier ?? 0) + colorOption.priceModifier + (namedCount > 0 ? BADGE_NAMED_EXTRA : 0)
   const minQty       = Math.max(namedCount, 1)
   const qty          = Math.max(manualQty, minQty)
   const total        = pricePerUnit * qty
@@ -110,7 +123,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
       namesData: null,
       badgeCustomization: {
         sizeId: form.sizeId,
-        sizeLabel: sizeOption.label,
+        sizeLabel: sizeOption?.name ?? '',
         topText: form.topText,
         bottomText: form.bottomText,
         photoUrl: form.photoUrl,
@@ -201,8 +214,8 @@ const BadgeConstructor = observer(function BadgeConstructor() {
             <div className="bc-price-card">
               <div className="bc-price-card__rows">
                 <div className="bc-price-card__row">
-                  <span>Базова ціна ({sizeOption.label})</span>
-                  <span>{BADGE_BASE_PRICE + sizeOption.priceModifier} грн</span>
+                  <span>Базова ціна ({sizeOption?.name ?? ''})</span>
+                  <span>{BADGE_BASE_PRICE + (sizeOption?.priceModifier ?? 0)} грн</span>
                 </div>
                 {colorOption.priceModifier > 0 && (
                   <div className="bc-price-card__row">
@@ -261,18 +274,22 @@ const BadgeConstructor = observer(function BadgeConstructor() {
             {/* 1. Size */}
             <div className="bc-field">
               <label className="bc-label">Розмір</label>
-              <div className="bc-chips">
-                {BADGE_SIZES.map(s => (
-                  <button
-                    key={s.id}
-                    className={`bc-chip${form.sizeId === s.id ? ' bc-chip--active' : ''}`}
-                    onClick={() => update({ sizeId: s.id })}
-                  >
-                    {s.label}
-                    {s.priceModifier > 0 && <span className="bc-chip__mod">+{s.priceModifier}</span>}
-                  </button>
-                ))}
-              </div>
+              {sizesLoading ? (
+                <Spin size="small" />
+              ) : (
+                <div className="bc-chips">
+                  {sizes.map(s => (
+                    <button
+                      key={s.id}
+                      className={`bc-chip${form.sizeId === s.id ? ' bc-chip--active' : ''}`}
+                      onClick={() => update({ sizeId: s.id })}
+                    >
+                      {s.name}
+                      {s.priceModifier > 0 && <span className="bc-chip__mod">+{s.priceModifier}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* 2. Photo */}
