@@ -124,9 +124,16 @@ export default function CertificateEditorPreview({
   }
 
   function drawWithLayout(ctx: CanvasRenderingContext2D, zones: CertificateOrientationLayout) {
+    const clip = (zone: { x: number; y: number; width: number; height: number }) => {
+      ctx.beginPath()
+      ctx.rect(zone.x, zone.y, zone.width, zone.height)
+      ctx.clip()
+    }
+
     // Title
     const titleZone = zones.title
     ctx.save()
+    clip(titleZone)
     ctx.font = `bold ${orientation === 'landscape' ? 28 : 24}px ${fontFamily}`
     ctx.fillStyle = '#1a1a2e'
     ctx.textAlign = 'center'
@@ -135,7 +142,7 @@ export default function CertificateEditorPreview({
     ctx.fillText(title, titleZone.x + titleZone.width / 2, titleZone.y + titleZone.height / 2)
     ctx.restore()
 
-    // Decorative line under title
+    // Decorative line under title (intentionally outside zone — no clip)
     ctx.save()
     const lineW = Math.min(180, titleZone.width * 0.4)
     const lineCx = titleZone.x + titleZone.width / 2
@@ -151,6 +158,7 @@ export default function CertificateEditorPreview({
     if (previewName) {
       const nameZone = zones.name
       ctx.save()
+      clip(nameZone)
       ctx.font = `italic ${orientation === 'landscape' ? 20 : 18}px ${fontFamily}`
       ctx.fillStyle = '#374151'
       ctx.textAlign = 'center'
@@ -163,6 +171,7 @@ export default function CertificateEditorPreview({
     if (bodyText) {
       const bz = zones.bodyText
       ctx.save()
+      clip(bz)
       ctx.font = `${orientation === 'landscape' ? 13 : 12}px ${fontFamily}`
       ctx.fillStyle = '#374151'
       ctx.textAlign = 'center'
@@ -175,6 +184,7 @@ export default function CertificateEditorPreview({
     if (additionalText && zones.additionalText) {
       const az = zones.additionalText
       ctx.save()
+      clip(az)
       ctx.font = `13px ${fontFamily}`
       ctx.fillStyle = '#6b7280'
       ctx.textAlign = 'center'
@@ -187,6 +197,7 @@ export default function CertificateEditorPreview({
     if (organization) {
       const oz = zones.organization
       ctx.save()
+      clip(oz)
       ctx.font = `600 ${orientation === 'landscape' ? 12 : 11}px ${fontFamily}`
       ctx.fillStyle = '#6b7280'
       ctx.textAlign = 'center'
@@ -199,6 +210,7 @@ export default function CertificateEditorPreview({
     if (year) {
       const yz = zones.year
       ctx.save()
+      clip(yz)
       ctx.font = `12px ${fontFamily}`
       ctx.fillStyle = '#9ca3af'
       ctx.textAlign = 'center'
@@ -211,20 +223,8 @@ export default function CertificateEditorPreview({
     if (signerName || signerTitle) {
       const snz = zones.signerName
       const stz = zones.signerTitle
+      // Signature line drawn above zone — no clip
       ctx.save()
-      ctx.textAlign = 'right'
-      ctx.textBaseline = 'middle'
-      if (signerName) {
-        ctx.font = `600 12px ${fontFamily}`
-        ctx.fillStyle = '#374151'
-        ctx.fillText(signerName, snz.x + snz.width, snz.y + snz.height / 2)
-      }
-      if (signerTitle) {
-        ctx.font = `11px ${fontFamily}`
-        ctx.fillStyle = '#9ca3af'
-        ctx.fillText(signerTitle, stz.x + stz.width, stz.y + stz.height / 2)
-      }
-      // Signature line above
       ctx.strokeStyle = '#d1d5db'
       ctx.lineWidth = 1
       ctx.beginPath()
@@ -233,25 +233,34 @@ export default function CertificateEditorPreview({
       ctx.lineTo(lEnd, snz.y - 4)
       ctx.stroke()
       ctx.restore()
+      if (signerName) {
+        ctx.save()
+        clip(snz)
+        ctx.font = `600 12px ${fontFamily}`
+        ctx.fillStyle = '#374151'
+        ctx.textAlign = 'right'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(signerName, snz.x + snz.width, snz.y + snz.height / 2)
+        ctx.restore()
+      }
+      if (signerTitle) {
+        ctx.save()
+        clip(stz)
+        ctx.font = `11px ${fontFamily}`
+        ctx.fillStyle = '#9ca3af'
+        ctx.textAlign = 'right'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(signerTitle, stz.x + stz.width, stz.y + stz.height / 2)
+        ctx.restore()
+      }
     }
 
     // Signer 2
     if ((signer2Name || signer2Title) && zones.signer2Name) {
       const s2n = zones.signer2Name
       const s2t = zones.signer2Title
+      // Signature line drawn above zone — no clip
       ctx.save()
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'middle'
-      if (signer2Name) {
-        ctx.font = `600 12px ${fontFamily}`
-        ctx.fillStyle = '#374151'
-        ctx.fillText(signer2Name, s2n.x, s2n.y + s2n.height / 2)
-      }
-      if (signer2Title) {
-        ctx.font = `11px ${fontFamily}`
-        ctx.fillStyle = '#9ca3af'
-        ctx.fillText(signer2Title, s2t.x, s2t.y + s2t.height / 2)
-      }
       ctx.strokeStyle = '#d1d5db'
       ctx.lineWidth = 1
       ctx.beginPath()
@@ -259,6 +268,26 @@ export default function CertificateEditorPreview({
       ctx.lineTo(s2n.x + Math.min(120, s2n.width), s2n.y - 4)
       ctx.stroke()
       ctx.restore()
+      if (signer2Name) {
+        ctx.save()
+        clip(s2n)
+        ctx.font = `600 12px ${fontFamily}`
+        ctx.fillStyle = '#374151'
+        ctx.textAlign = 'left'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(signer2Name, s2n.x, s2n.y + s2n.height / 2)
+        ctx.restore()
+      }
+      if (signer2Title && s2t) {
+        ctx.save()
+        clip(s2t)
+        ctx.font = `11px ${fontFamily}`
+        ctx.fillStyle = '#9ca3af'
+        ctx.textAlign = 'left'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(signer2Title, s2t.x, s2t.y + s2t.height / 2)
+        ctx.restore()
+      }
     }
   }
 
