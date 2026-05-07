@@ -28,7 +28,7 @@ import type {
 import './CertificateConstructor.css'
 
 const CertificateConstructor = observer(function CertificateConstructor() {
-  const { cart, toast, auth } = useRootStore()
+  const { cart, toast, auth, settings } = useRootStore()
 
   const [designName, setDesignName]   = useState('Моя грамота')
   const [editingName, setEditingName] = useState(false)
@@ -402,7 +402,7 @@ const CertificateConstructor = observer(function CertificateConstructor() {
                   onChange={e => update({ bodyText: e.target.value })}
                   placeholder="за перемогу в олімпіаді…"
                   autoSize={{ minRows: 2, maxRows: 5 }}
-                  maxLength={300}
+                  maxLength={settings.getNumber('certificate_max_body_length', 300)}
                   showCount
                 />
               </div>

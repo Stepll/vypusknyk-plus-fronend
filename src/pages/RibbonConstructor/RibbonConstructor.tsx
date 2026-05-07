@@ -135,7 +135,7 @@ function FlagSwatch({ hex, secondaryHex }: { hex: string; secondaryHex: string }
 const EMPTY_NAMES: NamesData = { school: '', groups: [{ className: '', names: '' }] }
 
 const RibbonConstructor = observer(function RibbonConstructor() {
-  const { cart, toast, auth } = useRootStore()
+  const { cart, toast, auth, settings } = useRootStore()
 
   const [designName, setDesignName]   = useState('Мій дизайн стрічки')
   const [editingName, setEditingName] = useState(false)
@@ -499,6 +499,8 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                     onChange={e => update({ mainText: e.target.value })}
                     placeholder="Випускник 2026"
                     size="large"
+                    maxLength={settings.getNumber('ribbon_max_text_length', 30)}
+                    showCount
                   />
                 )
               })()}
@@ -515,6 +517,8 @@ const RibbonConstructor = observer(function RibbonConstructor() {
                   onChange={e => update({ school: e.target.value })}
                   placeholder="Назва навчального закладу"
                   size="large"
+                  maxLength={settings.getNumber('ribbon_max_school_length', 50)}
+                  showCount
                 />
               </div>
 

@@ -165,7 +165,7 @@ function PromoCardSelect({
 // ─── Checkout ─────────────────────────────────────────────────────────────────
 
 const Checkout = observer(function Checkout() {
-  const { cart, auth, toast } = useRootStore()
+  const { cart, auth, toast, settings } = useRootStore()
   const navigate = useNavigate()
 
   const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethodResponse[]>([])
@@ -491,6 +491,16 @@ const Checkout = observer(function Checkout() {
             >
               Підтвердити замовлення
             </Button>
+
+            {(() => {
+              const isPeak = settings.getBool('peak_season_mode', false)
+              const days = settings.getNumber(isPeak ? 'production_days_peak' : 'production_days', 7)
+              return (
+                <p style={{ margin: '8px 0 0', fontSize: 12, color: '#6b7280', textAlign: 'center' }}>
+                  Орієнтовний термін виготовлення: {days} робочих днів
+                </p>
+              )
+            })()}
 
             <p className="co-sidebar__terms">
               Натискаючи, ви погоджуєтесь з <Link to="/terms">умовами використання</Link>

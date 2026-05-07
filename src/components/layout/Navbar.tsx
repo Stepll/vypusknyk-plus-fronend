@@ -15,7 +15,7 @@ const Navbar = observer(function Navbar() {
   const lastScrollY = useRef(0)
   const location = useLocation()
   const navigate = useNavigate()
-  const { cart, auth } = useRootStore()
+  const { cart, auth, settings } = useRootStore()
 
   useEffect(() => {
     const onScroll = () => {
@@ -38,7 +38,16 @@ const Navbar = observer(function Navbar() {
 
   const isLight = !scrolled
 
+  const peakSeason = settings.getBool('peak_season_mode', false)
+  const peakText = settings.get('peak_season_banner_text', '')
+
   return (
+    <>
+      {peakSeason && peakText && (
+        <div style={{ background: '#f59e0b', color: '#fff', textAlign: 'center', padding: '6px 16px', fontSize: 13, fontWeight: 500 }}>
+          {peakText}
+        </div>
+      )}
     <motion.header
       className={`navbar ${scrolled ? 'navbar--scrolled' : 'navbar--transparent'}`}
       animate={{ y: hidden ? -80 : 0 }}
@@ -178,6 +187,7 @@ const Navbar = observer(function Navbar() {
         )}
       </AnimatePresence>
     </motion.header>
+    </>
   )
 })
 

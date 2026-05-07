@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom'
+import { observer } from 'mobx-react-lite'
+import { useRootStore } from '../../stores/RootStore'
 import './Footer.css'
 
-const PHONE = '+380 (67) 671-45-10'
-const PHONE_HREF = 'tel:+380676714510'
-const EMAIL = 'vypusk.org@gmail.com'
-const VIBER_HREF = 'viber://chat?number=%2B380676714510'
-const TELEGRAM_HREF = 'https://t.me/+380676714510'
-const INSTAGRAM_HREF = 'https://www.instagram.com/vypusk_org/'
+function toTelHref(phone: string) {
+  return 'tel:+' + phone.replace(/\D/g, '')
+}
+function toViberHref(num: string) {
+  return 'viber://chat?number=%2B' + num.replace(/\D/g, '').replace(/^380/, '380')
+}
+function toTelegramHref(num: string) {
+  return 'https://t.me/+' + num.replace(/\D/g, '')
+}
 
 function ViberIcon() {
   return (
@@ -32,8 +37,20 @@ function InstagramIcon() {
   )
 }
 
-export default function Footer() {
+export default observer(function Footer() {
+  const { settings } = useRootStore()
   const year = new Date().getFullYear()
+
+  const phone    = settings.get('contact_phone',    '+380 (67) 671-45-10')
+  const email    = settings.get('contact_email',    'vypusk.org@gmail.com')
+  const hours    = settings.get('working_hours',    'Пн–Пт, 9:00–18:00')
+  const viber    = settings.get('social_viber',     '+380676714510')
+  const telegram = settings.get('social_telegram',  '+380676714510')
+  const instagram = settings.get('social_instagram', 'https://www.instagram.com/vypusk_org/')
+
+  const PHONE_HREF    = toTelHref(phone)
+  const VIBER_HREF    = toViberHref(viber)
+  const TELEGRAM_HREF = toTelegramHref(telegram)
 
   return (
     <footer className="footer">
@@ -48,7 +65,7 @@ export default function Footer() {
               Кастомні стрічки, медалі та аксесуари для шкільних свят. Виготовляємо з любов'ю з 2016 року.
             </p>
             <div className="footer__socials">
-              <a href={INSTAGRAM_HREF} target="_blank" rel="noreferrer" className="footer__social-link" aria-label="Instagram">
+              <a href={instagram} target="_blank" rel="noreferrer" className="footer__social-link" aria-label="Instagram">
                 <InstagramIcon />
               </a>
               <a href={VIBER_HREF} className="footer__social-link" aria-label="Viber">
@@ -88,15 +105,9 @@ export default function Footer() {
           <div className="footer__col">
             <p className="footer__col-title">Контакти</p>
             <div className="footer__contacts">
-              <a href={PHONE_HREF} className="footer__contact-link">
-                {PHONE}
-              </a>
-              <a href={`mailto:${EMAIL}`} className="footer__contact-link">
-                {EMAIL}
-              </a>
-              <p className="footer__working-hours">
-                Пн–Пт, 9:00–18:00
-              </p>
+              <a href={PHONE_HREF} className="footer__contact-link">{phone}</a>
+              <a href={`mailto:${email}`} className="footer__contact-link">{email}</a>
+              <p className="footer__working-hours">{hours}</p>
               <div className="footer__messengers">
                 <a href={VIBER_HREF} className="footer__messenger-btn">Viber</a>
                 <a href={TELEGRAM_HREF} target="_blank" rel="noreferrer" className="footer__messenger-btn">Telegram</a>
@@ -115,4 +126,4 @@ export default function Footer() {
       </div>
     </footer>
   )
-}
+})

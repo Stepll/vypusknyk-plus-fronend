@@ -26,7 +26,7 @@ import type { BadgeSizeResponse, BadgeImageResponse, BadgeTextColorResponse, Bad
 import './BadgeConstructor.css'
 
 const BadgeConstructor = observer(function BadgeConstructor() {
-  const { cart, toast, auth } = useRootStore()
+  const { cart, toast, auth, settings } = useRootStore()
 
   const [designName, setDesignName]   = useState('Мій значок')
   const [editingName, setEditingName] = useState(false)
@@ -414,7 +414,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                   value={form.topText}
                   onChange={e => update({ topText: e.target.value })}
                   placeholder="Наприклад: Випускник 2026"
-                  maxLength={50}
+                  maxLength={settings.getNumber('badge_max_top_text_length', 50)}
                   showCount
                 />
               </div>
@@ -425,7 +425,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
                   value={form.bottomText}
                   onChange={e => update({ bottomText: e.target.value })}
                   placeholder="Наприклад: ЗОШ №5"
-                  maxLength={50}
+                  maxLength={settings.getNumber('badge_max_bottom_text_length', 50)}
                   showCount
                 />
               </div>
