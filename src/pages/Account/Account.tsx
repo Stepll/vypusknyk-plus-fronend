@@ -4,6 +4,7 @@ import { Input, Button, Tag } from 'antd'
 import { api } from '../../api/client'
 import RibbonEditorPreview from '../../components/ui/RibbonEditorPreview'
 import BadgeEditorPreview from '../../components/ui/BadgeEditorPreview'
+import CertificateEditorPreview from '../../components/ui/CertificateEditorPreview'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { getUserOrders } from '../../api/orders'
@@ -337,7 +338,7 @@ const Account = observer(function Account() {
           )}
 
           {tab === 'designs' && (
-            auth.savedDesigns.length === 0 && auth.savedBadgeDesigns.length === 0
+            auth.savedDesigns.length === 0 && auth.savedBadgeDesigns.length === 0 && auth.savedCertificateDesigns.length === 0
               ? <EmptyState text="Поки що тут немає збережених дизайнів" />
               : (
                 <div className="ac-designs">
@@ -407,6 +408,63 @@ const Account = observer(function Account() {
                           <button
                             className="ac-design-card__remove-btn"
                             onClick={() => auth.removeDesign(design.id)}
+                            aria-label="Видалити дизайн"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {auth.savedCertificateDesigns.map(design => (
+                    <div key={`cert-${design.id}`} className="ac-design-card">
+                      <div className="ac-design-card__preview" style={{ padding: 8, background: '#f9f9f9' }}>
+                        <CertificateEditorPreview
+                          templateUrl={null}
+                          nativeOrientation="portrait"
+                          orientation={design.state.orientation}
+                          layout={null}
+                          title={design.state.title}
+                          bodyText={design.state.bodyText}
+                          organization={design.state.organization}
+                          year={design.state.year}
+                          signerName={design.state.signerName}
+                          signerTitle={design.state.signerTitle}
+                          signer2Name={design.state.signer2Name || undefined}
+                          signer2Title={design.state.signer2Title || undefined}
+                          additionalText={design.state.additionalText || undefined}
+                          fontFamily="Georgia, serif"
+                          previewName="Ім'я отримувача"
+                        />
+                      </div>
+                      <div className="ac-design-card__body">
+                        <div className="ac-design-card__header">
+                          <span className="ac-design-card__name">{design.designName}</span>
+                          <span className="ac-design-card__date">{design.savedAt}</span>
+                        </div>
+                        <div className="ac-design-card__tags">
+                          <span className="ac-design-card__tag">Грамота</span>
+                          <span className="ac-design-card__tag">{design.state.title}</span>
+                          {design.state.orientation === 'landscape'
+                            ? <span className="ac-design-card__tag">Альбомна</span>
+                            : <span className="ac-design-card__tag">Книжкова</span>
+                          }
+                        </div>
+                        <div className="ac-design-card__actions">
+                          <Button
+                            type="primary"
+                            className="ac-design-card__open-btn"
+                            onClick={() => {
+                              auth.loadCertificateDesign(design)
+                              navigate('/constructor/certificate')
+                            }}
+                          >
+                            Відкрити
+                          </Button>
+                          <button
+                            className="ac-design-card__remove-btn"
+                            onClick={() => auth.removeCertificateDesign(design.id)}
                             aria-label="Видалити дизайн"
                           >
                             ×
