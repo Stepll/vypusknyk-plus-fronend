@@ -74,7 +74,7 @@ function NamesDetails({ item }: { item: CartItem }) {
 }
 
 const Cart = observer(function Cart() {
-  const { cart } = useRootStore()
+  const { cart, settings } = useRootStore()
   const navigate = useNavigate()
 
   if (cart.items.length === 0) {
@@ -281,13 +281,27 @@ const Cart = observer(function Cart() {
               <span className="cart-summary__total-value">{cart.totalPrice} грн</span>
             </div>
 
-            <Button
-              type="primary"
-              className="cart-summary__order-btn"
-              onClick={() => navigate('/checkout')}
-            >
-              Оформити замовлення
-            </Button>
+            {(() => {
+              const minAmount = settings.getNumber('min_order_amount', 0)
+              const belowMin = minAmount > 0 && cart.totalPrice < minAmount
+              return (
+                <>
+                  <Button
+                    type="primary"
+                    className="cart-summary__order-btn"
+                    onClick={() => navigate('/checkout')}
+                    disabled={belowMin}
+                  >
+                    Оформити замовлення
+                  </Button>
+                  {belowMin && (
+                    <p style={{ margin: '8px 0 0', fontSize: 13, color: '#ef4444', textAlign: 'center' }}>
+                      Мінімальна сума замовлення — {minAmount} грн
+                    </p>
+                  )}
+                </>
+              )
+            })()}
 
             <Link to="/catalog" className="cart-summary__continue">
               Продовжити покупки

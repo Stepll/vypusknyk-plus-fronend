@@ -483,14 +483,29 @@ const Checkout = observer(function Checkout() {
               </span>
             </div>
 
-            <Button
-              type="primary"
-              className="co-sidebar__submit-btn"
-              onClick={handleSubmit}
-              loading={submitting}
-            >
-              Підтвердити замовлення
-            </Button>
+            {(() => {
+              const minAmount = settings.getNumber('min_order_amount', 0)
+              const finalTotal = discountInfo ? discountInfo.finalTotal : cart.totalPrice
+              const belowMin = minAmount > 0 && finalTotal < minAmount
+              return (
+                <>
+                  <Button
+                    type="primary"
+                    className="co-sidebar__submit-btn"
+                    onClick={handleSubmit}
+                    loading={submitting}
+                    disabled={belowMin}
+                  >
+                    Підтвердити замовлення
+                  </Button>
+                  {belowMin && (
+                    <p style={{ margin: '8px 0 0', fontSize: 13, color: '#ef4444', textAlign: 'center' }}>
+                      Мінімальна сума замовлення — {minAmount} грн
+                    </p>
+                  )}
+                </>
+              )
+            })()}
 
             {(() => {
               const isPeak = settings.getBool('peak_season_mode', false)
