@@ -17,6 +17,7 @@ import ChatWidget from './components/chat/ChatWidget'
 import ConstructorHub from './pages/ConstructorHub/ConstructorHub'
 import RibbonConstructor from './pages/RibbonConstructor/RibbonConstructor'
 import BadgeConstructor from './pages/BadgeConstructor/BadgeConstructor'
+import CertificateConstructor from './pages/CertificateConstructor/CertificateConstructor'
 import Checkout from './pages/Checkout/Checkout'
 import OrderSuccess from './pages/OrderSuccess/OrderSuccess'
 import Auth from './pages/Auth/Auth'
@@ -62,6 +63,7 @@ function App() {
               <Route path="/constructor" element={<ConstructorHub />} />
               <Route path="/constructor/ribbon" element={<RibbonConstructor />} />
               <Route path="/constructor/badge" element={<BadgeConstructor />} />
+              <Route path="/constructor/certificate" element={<CertificateConstructor />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
               <Route path="/auth" element={<Auth />} />

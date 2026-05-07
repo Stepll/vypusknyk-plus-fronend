@@ -220,6 +220,42 @@ export interface BadgeDesignResponse {
   state: unknown
 }
 
+export interface CertificateDesignResponse {
+  id: number
+  designName: string
+  savedAt: string
+  state: unknown
+}
+
+export interface CertificateTemplateResponse {
+  id: number
+  name: string
+  slug: string
+  imageUrl: string | null
+  priceModifier: number
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface CertificatePaperTypeResponse {
+  id: number
+  name: string
+  slug: string
+  priceModifier: number
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface CertificateFontResponse {
+  id: number
+  name: string
+  slug: string
+  fontFamily: string
+  priceModifier: number
+  isActive: boolean
+  sortOrder: number
+}
+
 export interface ConstructorIncompatibilityResponse {
   id: number
   typeA: string

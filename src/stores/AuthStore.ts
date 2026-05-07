@@ -14,8 +14,15 @@ import {
   updateBadgeDesign,
   deleteBadgeDesign,
 } from '../api/badge-designs'
-import { DesignResponse, BadgeDesignResponse } from '../api/types'
+import {
+  fetchCertificateDesigns,
+  createCertificateDesign,
+  updateCertificateDesign,
+  deleteCertificateDesign,
+} from '../api/certificate-designs'
+import { DesignResponse, BadgeDesignResponse, CertificateDesignResponse } from '../api/types'
 import type { BadgeState } from '../constants/badgeData'
+import type { CertificateState } from '../constants/certificateData'
 
 interface AuthResponseDto {
   id: number
@@ -50,6 +57,13 @@ export interface SavedBadgeDesign {
   state: BadgeState
 }
 
+export interface SavedCertificateDesign {
+  id: number | string
+  designName: string
+  savedAt: string
+  state: CertificateState
+}
+
 class AuthStore {
   user: AuthUser | null = null
   loading = false
@@ -58,6 +72,8 @@ class AuthStore {
   pendingDesign: SavedDesign | null = null
   savedBadgeDesigns: SavedBadgeDesign[] = []
   pendingBadgeDesign: SavedBadgeDesign | null = null
+  savedCertificateDesigns: SavedCertificateDesign[] = []
+  pendingCertificateDesign: SavedCertificateDesign | null = null
 
   constructor() {
     makeAutoObservable(this)
@@ -69,6 +85,8 @@ class AuthStore {
         this.pendingDesign = null
         this.savedBadgeDesigns = []
         this.pendingBadgeDesign = null
+        this.savedCertificateDesigns = []
+        this.pendingCertificateDesign = null
         this.error = null
       })
     })
@@ -86,6 +104,7 @@ class AuthStore {
         this.user = JSON.parse(userData)
         this.loadDesigns()
         this.loadBadgeDesigns()
+        this.loadCertificateDesigns()
       } catch {
         this.logout()
       }
@@ -135,6 +154,19 @@ class AuthStore {
     }
   }
 
+  private fromCertificateDto(dto: CertificateDesignResponse): SavedCertificateDesign {
+    return {
+      id: dto.id,
+      designName: dto.designName,
+      savedAt: new Date(dto.savedAt).toLocaleDateString('uk-UA', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }),
+      state: dto.state as CertificateState,
+    }
+  }
+
   async loadDesigns(): Promise<void> {
     try {
       const designs = await fetchDesigns()
@@ -153,6 +185,15 @@ class AuthStore {
     } catch { /* ignore */ }
   }
 
+  async loadCertificateDesigns(): Promise<void> {
+    try {
+      const designs = await fetchCertificateDesigns()
+      runInAction(() => {
+        this.savedCertificateDesigns = designs.map(d => this.fromCertificateDto(d))
+      })
+    } catch { /* ignore */ }
+  }
+
   async login(email: string, password: string): Promise<void> {
     this.loading = true
     this.error = null
@@ -166,6 +207,7 @@ class AuthStore {
       this.saveSession(user, dto)
       this.loadDesigns()
       this.loadBadgeDesigns()
+      this.loadCertificateDesigns()
       claimGuestOrders(getGuestToken()).catch(() => {})
     } catch (e) {
       runInAction(() => {
@@ -189,6 +231,7 @@ class AuthStore {
       this.saveSession(user, dto)
       this.loadDesigns()
       this.loadBadgeDesigns()
+      this.loadCertificateDesigns()
       claimGuestOrders(getGuestToken()).catch(() => {})
     } catch (e) {
       runInAction(() => {
@@ -355,12 +398,62 @@ class AuthStore {
     return d
   }
 
+  saveCertificateDesign(designName: string, state: CertificateState): void {
+    const existingIdx = this.savedCertificateDesigns.findIndex(d => d.designName === designName)
+    if (existingIdx >= 0) {
+      const existing = this.savedCertificateDesigns[existingIdx]
+      this.savedCertificateDesigns[existingIdx] = { ...existing, state }
+      updateCertificateDesign(existing.id as number, designName, state)
+        .then(dto => {
+          runInAction(() => {
+            const idx = this.savedCertificateDesigns.findIndex(d => d.id === dto.id)
+            if (idx >= 0) this.savedCertificateDesigns[idx] = this.fromCertificateDto(dto)
+          })
+        })
+        .catch(() => {})
+    } else {
+      const tempId = Math.random().toString(36).slice(2, 9)
+      const design: SavedCertificateDesign = {
+        id: tempId,
+        designName,
+        savedAt: new Date().toLocaleDateString('uk-UA', { day: '2-digit', month: 'long', year: 'numeric' }),
+        state: { ...state },
+      }
+      this.savedCertificateDesigns.unshift(design)
+      createCertificateDesign(designName, state)
+        .then(dto => {
+          runInAction(() => {
+            const idx = this.savedCertificateDesigns.findIndex(d => d.id === tempId)
+            if (idx >= 0) this.savedCertificateDesigns[idx] = this.fromCertificateDto(dto)
+          })
+        })
+        .catch(() => {})
+    }
+  }
+
+  removeCertificateDesign(id: number | string): void {
+    this.savedCertificateDesigns = this.savedCertificateDesigns.filter(d => d.id !== id)
+    if (typeof id === 'number') deleteCertificateDesign(id).catch(() => {})
+  }
+
+  loadCertificateDesign(design: SavedCertificateDesign): void {
+    this.pendingCertificateDesign = design
+  }
+
+  consumePendingCertificateDesign(): SavedCertificateDesign | null {
+    const d = this.pendingCertificateDesign
+    this.pendingCertificateDesign = null
+    return d
+  }
+
   logout(): void {
     this.user = null
     this.savedDesigns = []
     this.pendingDesign = null
     this.savedBadgeDesigns = []
     this.pendingBadgeDesign = null
+    this.savedCertificateDesigns = []
+    this.pendingCertificateDesign = null
     this.error = null
     setToken(null)
     setRefreshToken(null)

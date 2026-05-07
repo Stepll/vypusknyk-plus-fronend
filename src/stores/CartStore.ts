@@ -34,6 +34,25 @@ export interface BadgeCustomization {
   namesTextPosition: 'top' | 'bottom'
 }
 
+export interface CertificateCustomization {
+  templateId: number
+  templateName: string
+  paperTypeId: number
+  paperTypeName: string
+  orientation: 'landscape' | 'portrait'
+  title: string
+  bodyText: string
+  organization: string
+  year: string
+  signerName: string
+  signerTitle: string
+  fontId: number
+  fontFamily: string
+  comment: string
+  designName: string
+  namesCount: number
+}
+
 export interface CartItem {
   id: string            // unique per addition (uuid-like)
   productId: number | null
@@ -45,6 +64,7 @@ export interface CartItem {
   namesData: NamesData | null   // null = no names customization
   ribbonCustomization?: RibbonCustomization  // full config for custom ribbons
   badgeCustomization?: BadgeCustomization
+  certificateCustomization?: CertificateCustomization
 }
 
 export function cartItemTotal(item: CartItem): number {
