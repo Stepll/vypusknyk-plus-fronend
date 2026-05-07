@@ -13,6 +13,9 @@ export interface CertificateState {
   year: string
   signerName: string
   signerTitle: string
+  signer2Name: string
+  signer2Title: string
+  additionalText: string
   fontId: number
   comment: string
 }
@@ -27,6 +30,9 @@ export const DEFAULT_CERTIFICATE_STATE: CertificateState = {
   year: new Date().getFullYear().toString(),
   signerName: '',
   signerTitle: '',
+  signer2Name: '',
+  signer2Title: '',
+  additionalText: '',
   fontId: 1,
   comment: '',
 }

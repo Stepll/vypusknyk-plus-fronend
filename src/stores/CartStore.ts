@@ -46,6 +46,9 @@ export interface CertificateCustomization {
   year: string
   signerName: string
   signerTitle: string
+  signer2Name: string
+  signer2Title: string
+  additionalText: string
   fontId: number
   fontFamily: string
   comment: string

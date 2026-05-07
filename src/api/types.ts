@@ -227,6 +227,21 @@ export interface CertificateDesignResponse {
   state: unknown
 }
 
+export interface CertificateZoneRect { x: number; y: number; width: number; height: number }
+
+export type CertificateZoneKey =
+  | 'title' | 'name' | 'bodyText' | 'organization' | 'year'
+  | 'signerName' | 'signerTitle'
+  | 'signer2Name' | 'signer2Title'
+  | 'additionalText'
+
+export type CertificateOrientationLayout = Record<CertificateZoneKey, CertificateZoneRect>
+
+export interface CertificateLayoutConfig {
+  portrait: CertificateOrientationLayout
+  landscape: CertificateOrientationLayout
+}
+
 export interface CertificateTemplateResponse {
   id: number
   name: string
@@ -235,6 +250,10 @@ export interface CertificateTemplateResponse {
   priceModifier: number
   isActive: boolean
   sortOrder: number
+  nativeOrientation: 'portrait' | 'landscape'
+  hasSecondSigner: boolean
+  hasAdditionalText: boolean
+  layoutJson: string | null
 }
 
 export interface CertificatePaperTypeResponse {

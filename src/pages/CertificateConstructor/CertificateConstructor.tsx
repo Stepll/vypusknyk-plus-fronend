@@ -99,6 +99,14 @@ const CertificateConstructor = observer(function CertificateConstructor() {
   const paperOption    = paperTypes.find(p => p.id === form.paperTypeId) ?? paperTypes[0]
   const fontOption     = fonts.find(f => f.id === form.fontId) ?? fonts[0]
 
+  const parsedLayout = (() => {
+    if (!templateOption?.layoutJson) return null
+    try {
+      return JSON.parse(templateOption.layoutJson)
+    } catch { return null }
+  })()
+  const activeLayout = parsedLayout?.[form.orientation] ?? null
+
   const pricePerUnit = CERTIFICATE_BASE_PRICE
     + (templateOption?.priceModifier ?? 0)
     + (paperOption?.priceModifier ?? 0)
@@ -134,6 +142,9 @@ const CertificateConstructor = observer(function CertificateConstructor() {
         year: form.year,
         signerName: form.signerName,
         signerTitle: form.signerTitle,
+        signer2Name: form.signer2Name,
+        signer2Title: form.signer2Title,
+        additionalText: form.additionalText,
         fontId: form.fontId,
         fontFamily: fontOption?.fontFamily ?? 'serif',
         comment: form.comment,
@@ -211,13 +222,18 @@ const CertificateConstructor = observer(function CertificateConstructor() {
             <div className="cc-preview-card">
               <CertificateEditorPreview
                 templateUrl={templateOption?.imageUrl ?? null}
+                nativeOrientation={templateOption?.nativeOrientation ?? 'portrait'}
                 orientation={form.orientation}
+                layout={activeLayout}
                 title={form.title}
                 bodyText={form.bodyText}
                 organization={form.organization}
                 year={form.year}
                 signerName={form.signerName}
                 signerTitle={form.signerTitle}
+                signer2Name={form.signer2Name}
+                signer2Title={form.signer2Title}
+                additionalText={form.additionalText}
                 fontFamily={fontOption?.fontFamily ?? 'Georgia, serif'}
                 previewName={previewName}
               />
@@ -456,6 +472,44 @@ const CertificateConstructor = observer(function CertificateConstructor() {
                 />
               </div>
             </div>
+
+            {/* 6b. Second signer (conditional on template) */}
+            {templateOption?.hasSecondSigner && (
+              <div className="cc-section">
+                <p className="cc-section__title">Другий підписант</p>
+                <div className="cc-field">
+                  <label className="cc-label">Ім'я</label>
+                  <Input
+                    value={form.signer2Name}
+                    onChange={e => update({ signer2Name: e.target.value })}
+                    placeholder="Петренко І.В."
+                    maxLength={80}
+                  />
+                </div>
+                <div className="cc-field">
+                  <label className="cc-label">Посада</label>
+                  <Input
+                    value={form.signer2Title}
+                    onChange={e => update({ signer2Title: e.target.value })}
+                    placeholder="Голова методичної ради"
+                    maxLength={80}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 6c. Additional text (conditional on template) */}
+            {templateOption?.hasAdditionalText && (
+              <div className="cc-field">
+                <label className="cc-label">Додатковий текст</label>
+                <Input
+                  value={form.additionalText}
+                  onChange={e => update({ additionalText: e.target.value })}
+                  placeholder="Додаткова інформація"
+                  maxLength={150}
+                />
+              </div>
+            )}
 
             {/* 7. Font */}
             {fonts.length > 0 && (
