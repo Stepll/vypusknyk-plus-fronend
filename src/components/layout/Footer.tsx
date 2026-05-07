@@ -67,7 +67,10 @@ export default function Footer() {
               <Link to="/" className="footer__nav-link">Головна</Link>
               <Link to="/catalog" className="footer__nav-link">Каталог</Link>
               <Link to="/constructor" className="footer__nav-link">Конструктор стрічок</Link>
+              <Link to="/events" className="footer__nav-link">Шкільні свята</Link>
+              <Link to="/promotions" className="footer__nav-link">Акції</Link>
               <Link to="/about" className="footer__nav-link">Про нас</Link>
+              <Link to="/contacts" className="footer__nav-link">Контакти</Link>
             </nav>
           </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, Navigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom'
 import { Input, Button, Tag } from 'antd'
 import { api } from '../../api/client'
 import RibbonEditorPreview from '../../components/ui/RibbonEditorPreview'
@@ -73,8 +73,14 @@ function EmptyState({ text }: { text: string }) {
 const Account = observer(function Account() {
   const { auth, cart, toast } = useRootStore()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [tab, setTab] = useState<Tab>('profile')
+  const tabParam = searchParams.get('tab') as Tab | null
+  const tab: Tab = tabParam && ['profile', 'orders', 'designs'].includes(tabParam) ? tabParam : 'profile'
+
+  function setTab(t: Tab) {
+    setSearchParams(t === 'profile' ? {} : { tab: t }, { replace: true })
+  }
 
   const [fullName, setFullName] = useState(auth.user?.fullName ?? '')
   const [phone, setPhone]       = useState(auth.user?.phone ?? '')
