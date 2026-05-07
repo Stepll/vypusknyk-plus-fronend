@@ -134,6 +134,13 @@ src/
     │                              # textColorId, fontSlug, fontSize, comment)
     │                              # loadedFromDesign ref — запобігає перезапису налаштувань API-дефолтами
     │                              # при відкритті через saved designs (consumePendingBadgeDesign)
+    CertificateConstructor/        # /constructor/certificate
+    │                              # form: CertificateState (templateId, paperTypeId, orientation, title, bodyText, ...)
+    │                              # loadedFromDesign ref — аналог loadedFromDesign для грамот
+    │                              # Завантажує шаблони, типи паперу, шрифти через API
+    │                              # Парсить layoutJson шаблону → передає CertificateOrientationLayout до CertificateEditorPreview
+    │                              # hasSecondSigner/hasAdditionalText з шаблону — контролює видимість полів
+    │                              # Кнопки "Зберегти" + "Додати до кошика"
     RibbonConstructor/             # /constructor/ribbon
 
   components/
@@ -152,6 +159,14 @@ src/
       RibbonEditorPreview.tsx / RibbonEditorPreview.css
       RibbonPreview.tsx / RibbonPreview.css
       TiltCard.tsx / TiltCard.css
+      CertificateEditorPreview.tsx  # Canvas-превью грамоти (useCallback draw, useEffect для image + resize)
+      │                             # Props: templateUrl, nativeOrientation, orientation, layout, title, bodyText,
+      │                             # organization, year, signerName, signerTitle, signer2Name?, signer2Title?,
+      │                             # additionalText?, fontFamily, previewName
+      │                             # Ротація: needsRotation = orientation !== nativeOrientation (90° CW або CCW)
+      │                             # drawWithLayout: кожна зона кліпується ctx.clip() — текст не виходить за межі
+      │                             # Декоративні лінії (title underline, signer lines) — окремий save/restore БЕЗ clip
+      │                             # drawWithFallback: золота рамка + хардкод Y-позицій (коли layout=null)
 
   stores/
     RootStore.ts
@@ -162,7 +177,12 @@ src/
     │               # savedBadgeDesigns[], pendingBadgeDesign — аналог savedDesigns/pendingDesign для значків
     │               # loadBadgeDesign(design) → pendingBadgeDesign; consumePendingBadgeDesign() → повертає і очищує
     │               # saveBadgeDesign, removeBadgeDesign — оптимістичні оновлення + API sync
+    │               # SavedCertificateDesign { id, designName, savedAt, state: CertificateState }
+    │               # savedCertificateDesigns[], pendingCertificateDesign
+    │               # saveCertificateDesign, removeCertificateDesign, loadCertificateDesign, consumePendingCertificateDesign
     CartStore.ts    # localStorage; productId: number|null (null для кастомних стрічок/значків)
+    │               # CertificateCustomization: templateId/Name, paperTypeId/Name, orientation, title, bodyText,
+    │               #   organization, year, signerName/Title, signer2Name/Title, additionalText, fontId/Family, comment, namesCount
     ToastStore.ts
 
   api/
@@ -179,6 +199,10 @@ src/
     badge-text-colors.ts   # getBadgeTextColors() → BadgeTextColorResponse[] (id, name, hex, priceModifier)
     badge-fonts.ts         # getBadgeFonts() → BadgeFontResponse[] (id, name, slug, fontFamily)
     badge-text-sizes.ts    # getBadgeTextSizes() → BadgeTextSizeResponse[] (value, label)
+    certificate-templates.ts  # getCertificateTemplates() → CertificateTemplateResponse[] (з layoutJson, nativeOrientation, hasSecondSigner, hasAdditionalText)
+    certificate-paper-types.ts # getCertificatePaperTypes()
+    certificate-fonts.ts      # getCertificateFonts()
+    certificate-designs.ts    # fetchCertificateDesigns, createCertificateDesign, updateCertificateDesign, deleteCertificateDesign
     promotions.ts          # getPromotions, getMyPromoCards, activatePromoCode, calculateDiscount
     │                      # CartItemForDiscount: { productId?, qty, unitPrice } — unitPrice = cartItemTotal(i)/i.qty
     tasks.ts               # getTasks() → GET /api/v1/tasks; PublicTaskResponse (з userProgress?, isCompleted)
@@ -195,6 +219,8 @@ src/
                     # НЕ містить disabled/isOptionDisabled логіки — правила беруться з API (constructor-rules)
     badgeData.ts    # BadgeState { sizeId, photoUrl, photoTransform, topText, bottomText, textColorId, fontSlug,
                     #   fontSize, comment }, DEFAULT_BADGE_STATE, BADGE_BASE_PRICE, BADGE_NAMED_EXTRA
+    certificateData.ts  # CertificateState, DEFAULT_CERTIFICATE_STATE, CERTIFICATE_TITLES, CertificateOrientation
+                        # CANVAS_LANDSCAPE = {w:640,h:453}, CANVAS_PORTRAIT = {w:453,h:640}
 
   hooks/
     useScrollAnimation.ts
@@ -228,6 +254,27 @@ src/
 - Гостьові сесії: `guestToken` UUID генерується в `api/guest.ts`, зберігається в localStorage
 
 ---
+
+## Account — збережені дизайни
+
+Вкладка "Дизайни" показує три типи дизайнів:
+1. **Стрічки** — `auth.savedDesigns` → RibbonEditorPreview SVG (клік "Відкрити" + "В кошик" + видалення)
+2. **Значки** — `auth.savedBadgeDesigns` → BadgeEditorPreview canvas (клік "Відкрити")
+3. **Грамоти** — `auth.savedCertificateDesigns` → CertificateEditorPreview canvas з `templateUrl=null, layout=null` (fallback рендер з золотою рамкою)
+   - Тег: назва дизайну + title (ГРАМОТА/ДИПЛОМ/...) + орієнтація
+   - Кнопка "Відкрити": `auth.loadCertificateDesign(design)` + navigate('/constructor/certificate')
+   - Кнопка видалення: `auth.removeCertificateDesign(design.id)`
+- Empty state показується лише якщо всі три масиви порожні
+
+## Конструктор грамот (CertificateConstructor)
+
+- `CertificateState` зберігає тільки IDs (`templateId`, `paperTypeId`, `fontId`), не назви та URL
+- При завантаженні: `getCertificateTemplates()`, `getCertificatePaperTypes()`, `getCertificateFonts()` — завантажуються паралельно
+- `parsedLayout = JSON.parse(template.layoutJson)[orientation]` → передається до `CertificateEditorPreview` як `layout` prop
+- `activeLayout` залежить від вибраної орієнтації; якщо шаблон змінено → layout оновлюється
+- `hasSecondSigner/hasAdditionalText` з шаблону → контролює видимість додаткових полів вводу
+- `loadedFromDesign` ref — запобігає перезапису API-дефолтами при відкритті через `consumePendingCertificateDesign()`
+- Cart item: `certificateCustomization` з усіма параметрами включно з `fontFamily` (resolved з fontId)
 
 ## Конструктор значків (BadgeConstructor)
 
