@@ -102,19 +102,28 @@
 ```
 src/
   App.tsx                          # Кореневий компонент, маршрути, Ant Design тема
+  │                                # AppInner — observer(), викликає settings.load() при монтуванні
+  │                                # Якщо maintenance_mode=true → рендерить сторінку обслуговування з maintenance_text
+  │                                # Всі маршрути всередині AppInner
   main.tsx
   index.css
 
   pages/
     About/                         # /about
     Account/                       # /account — профіль, замовлення, дизайни
+    │                              # URL-based tab routing: /account (profile), /account?tab=orders, /account?tab=designs
+    │                              # useSearchParams: setTab викликає setSearchParams({}) для profile або { tab: t }
     │                              # Заголовок: isEmailVerified → Tag "Активовано"; інакше → Button "Надіслати лист"
     │                              # POST /auth/resend-activation для повторної відправки
     Auth/                          # /auth — вхід та реєстрація
     │                              # Google OAuth: useGoogleLogin (implicit flow) → access_token → loginWithGoogle()
     Cart/                          # /cart
+    │                              # Кнопка "Оформити" disabled коли cart.totalPrice < min_order_amount з settings
+    │                              # Показує "Мінімальна сума замовлення — X грн" в червоному при порушенні
     Catalog/                       # /catalog
     Checkout/                      # /checkout
+    │                              # Submit disabled коли finalTotal (після знижок) < min_order_amount з settings
+    │                              # Показує кількість днів виробництва (production_days) під кнопкою
     Contacts/                      # /contacts
     ConstructorHub/                 # /constructor
     Events/                        # /events
@@ -134,6 +143,7 @@ src/
     │                              # textColorId, fontSlug, fontSize, comment)
     │                              # loadedFromDesign ref — запобігає перезапису налаштувань API-дефолтами
     │                              # при відкритті через saved designs (consumePendingBadgeDesign)
+    │                              # topText/bottomText: maxLength з settings (badge_max_top_text_length / badge_max_bottom_text_length)
     CertificateConstructor/        # /constructor/certificate
     │                              # form: CertificateState (templateId, paperTypeId, orientation, title, bodyText, ...)
     │                              # loadedFromDesign ref — аналог loadedFromDesign для грамот
@@ -141,12 +151,15 @@ src/
     │                              # Парсить layoutJson шаблону → передає CertificateOrientationLayout до CertificateEditorPreview
     │                              # hasSecondSigner/hasAdditionalText з шаблону — контролює видимість полів
     │                              # Кнопки "Зберегти" + "Додати до кошика"
+    │                              # bodyText: maxLength з settings (certificate_max_body_length)
     RibbonConstructor/             # /constructor/ribbon
+    │                              # mainText/school: maxLength з settings (ribbon_max_text_length / ribbon_max_school_length)
 
   components/
     layout/
       Navbar.tsx / Navbar.css
-      Footer.tsx / Footer.css
+      Footer.tsx / Footer.css  # observer(); читає контакти з settings store (contact_phone, contact_email тощо)
+      │                        # toTelHref/toViberHref/toTelegramHref helpers; містить Шкільні свята, Акції, Контакти
     cart/
       CartFloat.tsx / CartFloat.css
     ui/
@@ -159,6 +172,11 @@ src/
       RibbonEditorPreview.tsx / RibbonEditorPreview.css
       RibbonPreview.tsx / RibbonPreview.css
       TiltCard.tsx / TiltCard.css
+      PeakSeasonBanner.tsx  # observer(); читає peak_season_mode (bool) + peak_season_banner_text з settings
+      │                     # Рендерить жовтий банер тільки якщо active=true і text непорожній
+      │                     # Розміщений на: Catalog, ProductPage, ConstructorHub, RibbonConstructor,
+      │                     #   BadgeConstructor, CertificateConstructor, Cart, Checkout
+      │                     # Позиція: ПІСЛЯ hero/top-band блоку, ПЕРЕД основним контентом
       CertificateEditorPreview.tsx  # Canvas-превью грамоти (useCallback draw, useEffect для image + resize)
       │                             # Props: templateUrl, nativeOrientation, orientation, layout, title, bodyText,
       │                             # organization, year, signerName, signerTitle, signer2Name?, signer2Title?,
@@ -183,6 +201,10 @@ src/
     CartStore.ts    # localStorage; productId: number|null (null для кастомних стрічок/значків)
     │               # CertificateCustomization: templateId/Name, paperTypeId/Name, orientation, title, bodyText,
     │               #   organization, year, signerName/Title, signer2Name/Title, additionalText, fontId/Family, comment, namesCount
+    SettingsStore.ts  # MobX store для налаштувань магазину; завантажується при старті App
+    │                 # load() → GET /api/v1/settings → Record<string,string>
+    │                 # get(key, fallback): string; getNumber(key, fallback): number; getBool(key, fallback): boolean
+    │                 # Доступний через useRootStore().settings в будь-якому observer-компоненті
     ToastStore.ts
 
   api/
@@ -203,6 +225,7 @@ src/
     certificate-paper-types.ts # getCertificatePaperTypes()
     certificate-fonts.ts      # getCertificateFonts()
     certificate-designs.ts    # fetchCertificateDesigns, createCertificateDesign, updateCertificateDesign, deleteCertificateDesign
+    settings.ts            # getPublicSettings() → GET /api/v1/settings → Record<string,string>
     promotions.ts          # getPromotions, getMyPromoCards, activatePromoCode, calculateDiscount
     │                      # CartItemForDiscount: { productId?, qty, unitPrice } — unitPrice = cartItemTotal(i)/i.qty
     tasks.ts               # getTasks() → GET /api/v1/tasks; PublicTaskResponse (з userProgress?, isCompleted)
