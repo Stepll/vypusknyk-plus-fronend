@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Input, Tooltip, Select } from 'antd'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { observer } from 'mobx-react-lite'
 import NamesDrawer, { NamesData, countNames } from '../../components/ui/NamesDrawer'
 import { useRootStore } from '../../stores/RootStore'
@@ -335,6 +336,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
 
   return (
     <div className="rc-page">
+      <PeakSeasonBanner />
 
       {/* Top band */}
       <div className="rc-top-band">

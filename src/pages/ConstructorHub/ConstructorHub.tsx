@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from 'antd'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import RibbonPreview from '../../components/ui/RibbonPreview'
 import { getPageContent } from '../../api/page-content'
 import './ConstructorHub.css'
@@ -78,6 +79,7 @@ export default function ConstructorHub() {
 
   return (
     <div className="hub-page">
+      <PeakSeasonBanner />
       <div className="hub-top-band">
         <div className="hub-container">
           <nav className="hub-breadcrumbs">

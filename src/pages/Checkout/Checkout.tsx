@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Button, Input } from 'antd'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { cartItemTotal } from '../../stores/CartStore'
@@ -279,6 +280,7 @@ const Checkout = observer(function Checkout() {
 
   return (
     <div className="co-page">
+      <PeakSeasonBanner />
       <div className="co-top-band">
         <div className="co-container">
           <nav className="co-breadcrumbs">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { motion } from 'framer-motion'
 import { Button, Tabs } from 'antd'
 import { observer } from 'mobx-react-lite'
@@ -150,6 +151,7 @@ const ProductPage = observer(function ProductPage() {
 
   return (
     <div className="product-page">
+      <PeakSeasonBanner />
 
       <div className="product-top-band">
         <div className="product-page__container">

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from 'antd'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
 import { cartItemTotal, CartItem } from '../../stores/CartStore'
@@ -126,6 +127,7 @@ const Cart = observer(function Cart() {
 
   return (
     <div className="cart-page">
+      <PeakSeasonBanner />
       <div className="cart-top-band">
         <div className="cart-page__container">
           <nav className="cart-breadcrumbs">

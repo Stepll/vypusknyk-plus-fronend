@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Input, Slider, Tooltip, Spin } from 'antd'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { observer } from 'mobx-react-lite'
 import { EditOutlined, UploadOutlined, UserOutlined, RotateRightOutlined } from '@ant-design/icons'
 import { useRootStore } from '../../stores/RootStore'
@@ -170,6 +171,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
 
   return (
     <div className="bc-page">
+      <PeakSeasonBanner />
 
       {/* Top band */}
       <div className="bc-top-band">

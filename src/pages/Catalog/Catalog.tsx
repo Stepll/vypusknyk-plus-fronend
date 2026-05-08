@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Select, Tag } from 'antd'
 import { Product, RibbonColor, SortOption } from '../../types/product'
@@ -151,6 +152,7 @@ export default function Catalog() {
 
   return (
     <div className="catalog-page">
+      <PeakSeasonBanner />
 
       {/* ── Constructor promo ── */}
       <section className="constructor-promo">

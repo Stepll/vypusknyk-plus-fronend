@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Input, Tooltip, Spin } from 'antd'
+import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { observer } from 'mobx-react-lite'
 import { EditOutlined, UserOutlined } from '@ant-design/icons'
 import { useRootStore } from '../../stores/RootStore'
@@ -159,6 +160,7 @@ const CertificateConstructor = observer(function CertificateConstructor() {
 
   return (
     <div className="cc-page">
+      <PeakSeasonBanner />
 
       {/* Top band */}
       <div className="cc-top-band">
