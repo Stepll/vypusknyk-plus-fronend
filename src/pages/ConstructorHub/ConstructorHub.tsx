@@ -79,7 +79,6 @@ export default function ConstructorHub() {
 
   return (
     <div className="hub-page">
-      <PeakSeasonBanner />
       <div className="hub-top-band">
         <div className="hub-container">
           <nav className="hub-breadcrumbs">
@@ -93,6 +92,7 @@ export default function ConstructorHub() {
           </div>
         </div>
       </div>
+      <PeakSeasonBanner />
 
       <div className="hub-container">
         {/* Ribbon — full row */}

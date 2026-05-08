@@ -336,7 +336,6 @@ const RibbonConstructor = observer(function RibbonConstructor() {
 
   return (
     <div className="rc-page">
-      <PeakSeasonBanner />
 
       {/* Top band */}
       <div className="rc-top-band">
@@ -350,6 +349,7 @@ const RibbonConstructor = observer(function RibbonConstructor() {
           </nav>
         </div>
       </div>
+      <PeakSeasonBanner />
 
       <div className="rc-container">
         <div className="rc-layout">

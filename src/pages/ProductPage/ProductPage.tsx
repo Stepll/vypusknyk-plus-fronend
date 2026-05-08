@@ -151,7 +151,6 @@ const ProductPage = observer(function ProductPage() {
 
   return (
     <div className="product-page">
-      <PeakSeasonBanner />
 
       <div className="product-top-band">
         <div className="product-page__container">
@@ -168,6 +167,7 @@ const ProductPage = observer(function ProductPage() {
           </nav>
         </div>
       </div>
+      <PeakSeasonBanner />
 
       <div className="product-page__container">
 

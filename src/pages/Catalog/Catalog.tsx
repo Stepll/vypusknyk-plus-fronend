@@ -152,7 +152,6 @@ export default function Catalog() {
 
   return (
     <div className="catalog-page">
-      <PeakSeasonBanner />
 
       {/* ── Constructor promo ── */}
       <section className="constructor-promo">
@@ -186,6 +185,7 @@ export default function Catalog() {
           </div>
         </div>
       </section>
+      <PeakSeasonBanner />
 
       {/* ── Catalog body ── */}
       <div className="catalog-container catalog-body">

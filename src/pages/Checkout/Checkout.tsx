@@ -280,7 +280,6 @@ const Checkout = observer(function Checkout() {
 
   return (
     <div className="co-page">
-      <PeakSeasonBanner />
       <div className="co-top-band">
         <div className="co-container">
           <nav className="co-breadcrumbs">
@@ -292,6 +291,7 @@ const Checkout = observer(function Checkout() {
           </nav>
         </div>
       </div>
+      <PeakSeasonBanner />
 
       <div className="co-container">
         <div className="co-layout">

@@ -127,7 +127,6 @@ const Cart = observer(function Cart() {
 
   return (
     <div className="cart-page">
-      <PeakSeasonBanner />
       <div className="cart-top-band">
         <div className="cart-page__container">
           <nav className="cart-breadcrumbs">
@@ -138,6 +137,7 @@ const Cart = observer(function Cart() {
         </div>
       </div>
 
+      <PeakSeasonBanner />
       <div className="cart-page__container">
         <div className="cart-layout">
 

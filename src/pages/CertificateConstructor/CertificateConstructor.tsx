@@ -160,7 +160,6 @@ const CertificateConstructor = observer(function CertificateConstructor() {
 
   return (
     <div className="cc-page">
-      <PeakSeasonBanner />
 
       {/* Top band */}
       <div className="cc-top-band">
@@ -174,6 +173,7 @@ const CertificateConstructor = observer(function CertificateConstructor() {
           </nav>
         </div>
       </div>
+      <PeakSeasonBanner />
 
       <div className="cc-container">
         <div className="cc-layout">

@@ -171,7 +171,6 @@ const BadgeConstructor = observer(function BadgeConstructor() {
 
   return (
     <div className="bc-page">
-      <PeakSeasonBanner />
 
       {/* Top band */}
       <div className="bc-top-band">
@@ -185,6 +184,7 @@ const BadgeConstructor = observer(function BadgeConstructor() {
           </nav>
         </div>
       </div>
+      <PeakSeasonBanner />
 
       <div className="bc-container">
         <div className="bc-layout">
