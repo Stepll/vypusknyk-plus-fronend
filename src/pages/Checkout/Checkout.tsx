@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Button, Input } from 'antd'
+import { Button, Input, Select } from 'antd'
 import PeakSeasonBanner from '../../components/ui/PeakSeasonBanner'
 import { observer } from 'mobx-react-lite'
 import { useRootStore } from '../../stores/RootStore'
@@ -33,6 +33,17 @@ const BASE_FORM: Omit<CheckoutForm, 'fullName' | 'phone' | 'email'> = {
   deliveryFields: {},
   payment:        '',
   comment:        '',
+}
+
+interface NpFieldConfig {
+  modelName?: string
+  calledMethod?: string
+  searchParam?: string
+  dataPath?: string
+  labelKey?: string
+  refKey?: string
+  dependsOn?: string
+  dependsOnParam?: string
 }
 
 // ─── Phone mask ──────────────────────────────────────────────────────────────
@@ -76,7 +87,128 @@ const COLOR_LABELS: Record<string, string> = {
 const MATERIAL_LABELS: Record<string, string> = { atlas: 'Атлас', silk: 'Шовк', satin: 'Сатин' }
 const PRINT_LABELS: Record<string, string> = { foil: 'Фольга', film: 'Плівка', '3d': '3Д' }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Nova Poshta select field ─────────────────────────────────────────────────
+
+function resolvePath(obj: unknown, path: string): Record<string, string>[] {
+  // Parses paths like "data[0].Addresses" or "data"
+  const segments = path.split('.')
+  let cur: unknown = obj
+  for (const seg of segments) {
+    if (cur == null) return []
+    const arrMatch = seg.match(/^(\w+)\[(\d+)\]$/)
+    if (arrMatch) {
+      cur = (cur as Record<string, unknown[]>)[arrMatch[1]]?.[parseInt(arrMatch[2])]
+    } else {
+      cur = (cur as Record<string, unknown>)[seg]
+    }
+  }
+  return Array.isArray(cur) ? (cur as Record<string, string>[]) : []
+}
+
+interface NpOption {
+  label: string
+  value: string
+  ref?: string
+}
+
+interface NpSelectFieldProps {
+  field: DeliveryCheckoutField
+  config: NpFieldConfig
+  value: string
+  apiUrl: string
+  apiKey: string
+  dependencyRef?: string
+  onChange: (value: string, ref?: string) => void
+  hasError?: boolean
+}
+
+function NpSelectField({
+  field, config, value, apiUrl, apiKey, dependencyRef, onChange, hasError,
+}: NpSelectFieldProps) {
+  const [options, setOptions] = useState<NpOption[]>([])
+  const [fetching, setFetching] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const disabled = !!config.dependsOn && !dependencyRef
+
+  async function fetchOptions(search: string) {
+    if (!apiUrl || !config.modelName || !config.calledMethod) return
+    if (config.dependsOn && !dependencyRef) return
+
+    const methodProperties: Record<string, string | number> = { Limit: 30 }
+    if (search && config.searchParam) methodProperties[config.searchParam] = search
+    if (config.dependsOn && dependencyRef && config.dependsOnParam) {
+      methodProperties[config.dependsOnParam] = dependencyRef
+    }
+
+    setFetching(true)
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey,
+          modelName: config.modelName,
+          calledMethod: config.calledMethod,
+          methodProperties,
+        }),
+      })
+      const json = await res.json()
+      const items = config.dataPath
+        ? resolvePath(json, config.dataPath)
+        : ((json.data as Record<string, string>[]) ?? [])
+
+      setOptions(items.map(item => ({
+        label: config.labelKey ? item[config.labelKey] : '',
+        value: config.labelKey ? item[config.labelKey] : '',
+        ref: config.refKey ? item[config.refKey] : undefined,
+      })))
+    } catch {
+      // silently ignore network errors
+    }
+    setFetching(false)
+  }
+
+  function handleSearch(search: string) {
+    clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => fetchOptions(search), 350)
+  }
+
+  function handleChange(val: string) {
+    const opt = options.find(o => o.value === val)
+    onChange(val, opt?.ref)
+  }
+
+  // When dependency ref changes, reset selection and options
+  useEffect(() => {
+    if (config.dependsOn) {
+      setOptions([])
+      onChange('', undefined)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dependencyRef])
+
+  return (
+    <Select
+      showSearch
+      value={value || undefined}
+      placeholder={
+        disabled
+          ? `Спочатку оберіть ${config.dependsOn ?? 'місто'}`
+          : 'Почніть вводити для пошуку...'
+      }
+      filterOption={false}
+      onSearch={handleSearch}
+      onChange={handleChange}
+      loading={fetching}
+      disabled={disabled}
+      size="large"
+      style={{ width: '100%' }}
+      status={hasError ? 'error' : undefined}
+      notFoundContent={fetching ? 'Завантаження...' : 'Нічого не знайдено'}
+      options={options.map(o => ({ label: o.label, value: o.value }))}
+    />
+  )
+}
 
 // ─── PromoCardSelect ─────────────────────────────────────────────────────────
 
@@ -183,6 +315,8 @@ const Checkout = observer(function Checkout() {
   const [myCards, setMyCards] = useState<PromoCodeCardResponse[]>([])
   const [selectedPromoCardId, setSelectedPromoCardId] = useState<number | null>(null)
   const [discountInfo, setDiscountInfo] = useState<CalculateDiscountResponse | null>(null)
+  // Stores refs (e.g. city DeliveryCityRef) needed for dependent select fields
+  const [fieldRefs, setFieldRefs] = useState<Record<string, string>>({})
 
   useEffect(() => {
     getDeliveryMethods().then(methods => {
@@ -221,6 +355,13 @@ const Checkout = observer(function Checkout() {
   const selectedMethod = deliveryMethods.find(m => m.slug === form.deliverySlug)
   const activeFields = selectedMethod?.checkoutFields.filter(f => f.isEnabled) ?? []
 
+  // Parse API credentials from delivery method settings
+  const methodSettings: Record<string, string> = (() => {
+    try { return JSON.parse(selectedMethod?.settings ?? '{}') } catch { return {} }
+  })()
+  const npApiUrl = methodSettings.apiUrl || 'https://api.novaposhta.ua/v2.0/json/'
+  const npApiKey = methodSettings.apiKey || ''
+
   function set<K extends keyof CheckoutForm>(key: K, value: CheckoutForm[K]) {
     setForm(prev => ({ ...prev, [key]: value }))
     if (errors[key as string]) setErrors(prev => { const n = { ...prev }; delete n[key as string]; return n })
@@ -228,12 +369,20 @@ const Checkout = observer(function Checkout() {
 
   function setDelivery(slug: string) {
     setForm(prev => ({ ...prev, deliverySlug: slug, deliveryFields: {} }))
+    setFieldRefs({})
     setErrors({})
   }
 
   function setFieldValue(key: string, value: string) {
     setForm(prev => ({ ...prev, deliveryFields: { ...prev.deliveryFields, [key]: value } }))
     if (errors[key]) setErrors(prev => { const n = { ...prev }; delete n[key]; return n })
+  }
+
+  function setSelectFieldValue(key: string, value: string, ref?: string) {
+    setFieldValue(key, value)
+    if (ref !== undefined) {
+      setFieldRefs(prev => ({ ...prev, [key]: ref }))
+    }
   }
 
   async function handleSubmit() {
@@ -356,20 +505,39 @@ const Checkout = observer(function Checkout() {
                 ))}
               </div>
 
-              {activeFields.map(field => (
-                <div key={field.key} className="co-field">
-                  <label className="co-label">
-                    {field.label}{field.required ? ' *' : ''}
-                  </label>
-                  <Input
-                    value={form.deliveryFields[field.key] ?? ''}
-                    onChange={e => setFieldValue(field.key, e.target.value)}
-                    size="large"
-                    status={errors[field.key] ? 'error' : undefined}
-                  />
-                  {errors[field.key] && <span className="co-error">{errors[field.key]}</span>}
-                </div>
-              ))}
+              {activeFields.map(field => {
+                let npConfig: NpFieldConfig = {}
+                try { npConfig = field.optionsJson ? JSON.parse(field.optionsJson) : {} } catch {}
+                const isNpSelect = field.type === 'select' && !!npConfig.modelName
+
+                return (
+                  <div key={field.key} className="co-field">
+                    <label className="co-label">
+                      {field.label}{field.required ? ' *' : ''}
+                    </label>
+                    {isNpSelect ? (
+                      <NpSelectField
+                        field={field}
+                        config={npConfig}
+                        value={form.deliveryFields[field.key] ?? ''}
+                        apiUrl={npApiUrl}
+                        apiKey={npApiKey}
+                        dependencyRef={npConfig.dependsOn ? fieldRefs[npConfig.dependsOn] : undefined}
+                        onChange={(val, ref) => setSelectFieldValue(field.key, val, ref)}
+                        hasError={!!errors[field.key]}
+                      />
+                    ) : (
+                      <Input
+                        value={form.deliveryFields[field.key] ?? ''}
+                        onChange={e => setFieldValue(field.key, e.target.value)}
+                        size="large"
+                        status={errors[field.key] ? 'error' : undefined}
+                      />
+                    )}
+                    {errors[field.key] && <span className="co-error">{errors[field.key]}</span>}
+                  </div>
+                )
+              })}
             </div>
 
             {/* Section 3: Payment */}
