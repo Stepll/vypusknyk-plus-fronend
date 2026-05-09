@@ -114,16 +114,21 @@ interface NpOption {
 interface NpSelectFieldProps {
   field: DeliveryCheckoutField
   config: NpFieldConfig
-  value: string
+  // displayValue = текст для відображення (назва міста/відділення), для замовлення
+  displayValue: string
+  // selectValue = ref (uuid) для Ant Design Select, щоб підсвітити вибрану опцію
+  selectValue: string
   apiUrl: string
   apiKey: string
   dependencyRef?: string
-  onChange: (value: string, ref?: string) => void
+  // onChange(displayText, ref) — displayText в форму, ref в fieldRefs
+  onChange: (displayText: string, ref: string) => void
+  onClear: () => void
   hasError?: boolean
 }
 
 function NpSelectField({
-  field, config, value, apiUrl, apiKey, dependencyRef, onChange, hasError,
+  config, displayValue, selectValue, apiUrl, apiKey, dependencyRef, onChange, onClear, hasError,
 }: NpSelectFieldProps) {
   const [options, setOptions] = useState<NpOption[]>([])
   const [fetching, setFetching] = useState(false)
@@ -157,9 +162,11 @@ function NpSelectField({
         ? resolvePath(json, config.dataPath)
         : ((json.data as Record<string, string>[]) ?? [])
 
+      // value = ref (uuid) щоб handleChange отримував ref напряму без find()
+      // label = текст для показу юзеру
       setOptions(items.map(item => ({
         label: config.labelKey ? item[config.labelKey] : '',
-        value: config.labelKey ? item[config.labelKey] : '',
+        value: config.refKey ? (item[config.refKey] || item[config.labelKey] || '') : (item[config.labelKey] || ''),
         ref: config.refKey ? item[config.refKey] : undefined,
       })))
     } catch {
@@ -173,16 +180,19 @@ function NpSelectField({
     timerRef.current = setTimeout(() => fetchOptions(search), 350)
   }
 
+  // val = ref (uuid) — option value, не display text
   function handleChange(val: string) {
     const opt = options.find(o => o.value === val)
-    onChange(val, opt?.ref)
+    const displayText = opt?.label ?? val
+    const ref = opt?.value ?? val  // option value IS the ref
+    onChange(displayText, ref)
   }
 
-  // When dependency ref changes, reset selection and options
+  // Коли змінюється залежність (місто) — скидаємо відділення
   useEffect(() => {
     if (config.dependsOn) {
       setOptions([])
-      onChange('', undefined)
+      onClear()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencyRef])
@@ -190,7 +200,8 @@ function NpSelectField({
   return (
     <Select
       showSearch
-      value={value || undefined}
+      // value = ref (uuid) — відповідає option.value, Ant Design показує label
+      value={selectValue || undefined}
       placeholder={
         disabled
           ? `Спочатку оберіть ${config.dependsOn ?? 'місто'}`
@@ -315,7 +326,7 @@ const Checkout = observer(function Checkout() {
   const [myCards, setMyCards] = useState<PromoCodeCardResponse[]>([])
   const [selectedPromoCardId, setSelectedPromoCardId] = useState<number | null>(null)
   const [discountInfo, setDiscountInfo] = useState<CalculateDiscountResponse | null>(null)
-  // Stores refs (e.g. city DeliveryCityRef) needed for dependent select fields
+  // fieldRefs[key] = ref (uuid) — для залежних селектів і для value пропу Ant Design Select
   const [fieldRefs, setFieldRefs] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -378,11 +389,14 @@ const Checkout = observer(function Checkout() {
     if (errors[key]) setErrors(prev => { const n = { ...prev }; delete n[key]; return n })
   }
 
-  function setSelectFieldValue(key: string, value: string, ref?: string) {
-    setFieldValue(key, value)
-    if (ref !== undefined) {
-      setFieldRefs(prev => ({ ...prev, [key]: ref }))
-    }
+  function setSelectFieldValue(key: string, displayText: string, ref: string) {
+    setFieldValue(key, displayText)
+    setFieldRefs(prev => ({ ...prev, [key]: ref }))
+  }
+
+  function clearSelectField(key: string) {
+    setFieldValue(key, '')
+    setFieldRefs(prev => { const n = { ...prev }; delete n[key]; return n })
   }
 
   async function handleSubmit() {
@@ -519,11 +533,13 @@ const Checkout = observer(function Checkout() {
                       <NpSelectField
                         field={field}
                         config={npConfig}
-                        value={form.deliveryFields[field.key] ?? ''}
+                        displayValue={form.deliveryFields[field.key] ?? ''}
+                        selectValue={fieldRefs[field.key] ?? ''}
                         apiUrl={npApiUrl}
                         apiKey={npApiKey}
                         dependencyRef={npConfig.dependsOn ? fieldRefs[npConfig.dependsOn] : undefined}
-                        onChange={(val, ref) => setSelectFieldValue(field.key, val, ref)}
+                        onChange={(displayText, ref) => setSelectFieldValue(field.key, displayText, ref)}
+                        onClear={() => clearSelectField(field.key)}
                         hasError={!!errors[field.key]}
                       />
                     ) : (
