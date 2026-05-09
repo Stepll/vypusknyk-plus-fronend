@@ -135,13 +135,21 @@ function NpSelectField({
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
   const disabled = !!config.dependsOn && !dependencyRef
 
-  async function fetchOptions(search: string) {
-    if (!apiUrl || !config.modelName || !config.calledMethod) return
-    if (config.dependsOn && !dependencyRef) return
+  // hasDepends=true → поле завантажує всі опції при зміні залежності, фільтрує клієнтськи
+  // hasDepends=false → пошук по API при введенні (для міст)
+  const hasDepends = !!config.dependsOn
 
-    const methodProperties: Record<string, string | number> = { Limit: 30 }
-    if (search && config.searchParam) methodProperties[config.searchParam] = search
-    if (config.dependsOn && dependencyRef && config.dependsOnParam) {
+  async function fetchOptions(search?: string) {
+    if (!apiUrl || !config.modelName || !config.calledMethod) return
+    if (hasDepends && !dependencyRef) return
+
+    const methodProperties: Record<string, string | number> = { Limit: 200 }
+    // Для незалежних полів (місто) — передаємо пошук в API
+    if (!hasDepends && search && config.searchParam) {
+      methodProperties[config.searchParam] = search
+    }
+    // Передаємо ref залежного поля (CityRef для відділень)
+    if (hasDepends && dependencyRef && config.dependsOnParam) {
       methodProperties[config.dependsOnParam] = dependencyRef
     }
 
@@ -162,60 +170,70 @@ function NpSelectField({
         ? resolvePath(json, config.dataPath)
         : ((json.data as Record<string, string>[]) ?? [])
 
-      // value = ref (uuid) щоб handleChange отримував ref напряму без find()
-      // label = текст для показу юзеру
       setOptions(items.map(item => ({
         label: config.labelKey ? item[config.labelKey] : '',
-        value: config.refKey ? (item[config.refKey] || item[config.labelKey] || '') : (item[config.labelKey] || ''),
+        value: config.refKey
+          ? (item[config.refKey] || item[config.labelKey] || '')
+          : (item[config.labelKey] || ''),
         ref: config.refKey ? item[config.refKey] : undefined,
       })))
     } catch {
-      // silently ignore network errors
+      // silently ignore
     }
     setFetching(false)
   }
 
+  // Для міст — дебаунс пошук по API
   function handleSearch(search: string) {
+    if (hasDepends) return  // відділення фільтруються клієнтськи
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => fetchOptions(search), 350)
   }
 
-  // val = ref (uuid) — option value, не display text
   function handleChange(val: string) {
     const opt = options.find(o => o.value === val)
-    const displayText = opt?.label ?? val
-    const ref = opt?.value ?? val  // option value IS the ref
-    onChange(displayText, ref)
+    onChange(opt?.label ?? val, opt?.value ?? val)
   }
 
-  // Коли змінюється залежність (місто) — скидаємо відділення
+  // Залежне поле (відділення): автозавантаження всіх опцій при виборі міста
   useEffect(() => {
-    if (config.dependsOn) {
-      setOptions([])
-      onClear()
-    }
+    if (!hasDepends) return
+    setOptions([])
+    onClear()
+    if (dependencyRef) fetchOptions()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencyRef])
+
+  const isLoading = fetching
+  const noDataText = isLoading
+    ? 'Завантаження...'
+    : hasDepends && !dependencyRef
+      ? 'Спочатку оберіть місто'
+      : 'Нічого не знайдено'
 
   return (
     <Select
       showSearch
-      // value = ref (uuid) — відповідає option.value, Ant Design показує label
       value={selectValue || undefined}
       placeholder={
         disabled
           ? `Спочатку оберіть ${config.dependsOn ?? 'місто'}`
           : 'Почніть вводити для пошуку...'
       }
-      filterOption={false}
+      // Міста — API фільтрує; відділення — фільтруємо клієнтськи по label
+      filterOption={hasDepends
+        ? (input, option) =>
+            String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+        : false
+      }
       onSearch={handleSearch}
       onChange={handleChange}
-      loading={fetching}
+      loading={isLoading}
       disabled={disabled}
       size="large"
       style={{ width: '100%' }}
       status={hasError ? 'error' : undefined}
-      notFoundContent={fetching ? 'Завантаження...' : 'Нічого не знайдено'}
+      notFoundContent={noDataText}
       options={options.map(o => ({ label: o.label, value: o.value }))}
     />
   )
